@@ -1,8 +1,8 @@
 /* Mobile first: 375 → tablet 768 → desktop 1440 (макет Figma).
    Кольори поки hex — заміни на CSS-змінні з globals.css, коли Тімлід їх додасть. */
 .footer {
-  background-color: #def2de;
-  color: #1b391b;
+  background-color: var(--color-scheme-2-foreground);
+  color: var(--color-scheme-2-text);
   padding: 48px 20px;
 }
 
@@ -38,6 +38,7 @@
     align-items: center;
     row-gap: 24px;
   }
+
   .nav {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -53,9 +54,11 @@
   .content {
     grid-template-columns: 400px 1fr 400px;
   }
+
   .social {
     justify-self: center;
   }
+
   .nav {
     grid-column: auto;
     grid-row: auto;

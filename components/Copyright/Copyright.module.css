@@ -1,10 +1,12 @@
 .text {
+  font-family: var(--font-family);
+  color: var(--color-scheme-2-text);
   max-width: 239px;
   margin: 0 auto;
   text-align: center;
   font-size: 12px;
-  line-height: 1.5;
-  color: #1b391b;
+  line-height: 150%;
+  padding-top: 8px;
 }
 
 @media (min-width: 768px) {

@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #1b391b;
+  color: var(--color-scheme-2-text);
   transition: opacity 0.2s ease;
 }
 
@@ -14,6 +14,6 @@
 .text {
   font-size: 18px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 100%;
   letter-spacing: -0.01em;
 }
