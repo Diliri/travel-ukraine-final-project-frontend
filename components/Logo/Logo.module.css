@@ -1,0 +1,32 @@
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 3px;
+  width: 121px;
+  height: 35px;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-scheme-2-text);
+}
+
+.logo:hover .text,
+.logo:focus-visible .text {
+  color: var(--color-mantis-dark);
+}
