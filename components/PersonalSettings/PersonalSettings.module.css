@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 644px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+@media (min-width: 1440px) {
+  .wrapper {
+    gap: 64px;
+  }
+  .sectionTitle {
+    font-size: 32px;
+  }
+}

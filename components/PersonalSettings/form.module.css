@@ -1,0 +1,128 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ps-text);
+  background-color: transparent;
+  border: 1px solid var(--ps-border);
+  border-radius: var(--ps-radius);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input::placeholder {
+  color: rgba(27, 57, 27, 0.5);
+}
+
+.input:hover,
+.input:focus {
+  border-color: var(--ps-primary);
+}
+
+.inputError,
+.inputError:hover,
+.inputError:focus {
+  border-color: var(--ps-error);
+}
+
+.error {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ps-error);
+}
+
+/* Мобільна: «Відмінити» зверху, «Зберегти» знизу (як у макеті); з 768px — в рядок */
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.submit,
+.cancel {
+  height: 48px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  border-radius: var(--ps-radius);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.submit {
+  color: var(--ps-white);
+  background-color: var(--ps-primary);
+  border: 1px solid var(--ps-primary);
+}
+
+.submit:hover:not(:disabled),
+.submit:focus-visible:not(:disabled) {
+  background-color: var(--ps-primary-hover);
+  border-color: var(--ps-primary-hover);
+}
+
+.cancel {
+  color: var(--ps-text);
+  background-color: var(--ps-fill);
+  border: 1px solid var(--ps-border);
+}
+
+.cancel:hover:not(:disabled),
+.cancel:focus-visible:not(:disabled) {
+  background-color: var(--ps-border);
+}
+
+.submit:disabled,
+.cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    flex-direction: row;
+    max-width: 422px;
+    padding-top: 24px;
+  }
+  .submit,
+  .cancel {
+    flex: 1;
+  }
+}
+
+@media (min-width: 1440px) {
+  .label,
+  .input {
+    font-size: 18px;
+  }
+  .submit,
+  .cancel {
+    font-size: 20px;
+  }
+}

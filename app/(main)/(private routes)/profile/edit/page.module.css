@@ -1,0 +1,64 @@
+/* Токени з Figma. var(--token, fallback): коли Тімлід додасть змінні в globals.css — підхопляться самі. */
+.page {
+  --ps-bg: var(--color-scheme-2-background, #eef8ee);
+  --ps-text: var(--color-scheme-2-text, #1b391b);
+  --ps-border: var(--opacity-neutral-darkest-15, rgba(0, 0, 0, 0.15));
+  --ps-fill: var(--opacity-neutral-darkest-5, rgba(0, 0, 0, 0.05));
+  --ps-primary: var(--color-mantis-dark, #4a9849);
+  --ps-primary-hover: var(--color-mantis-darker, #3b7d3a);
+  --ps-error: var(--color-red, #d32f2f);
+  --ps-white: var(--color-white, #fff);
+  --ps-radius: 6px;
+
+  flex: 1;
+  color: var(--ps-text);
+  background-color: var(--ps-bg);
+}
+
+.container {
+  max-width: 1312px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.header {
+  padding: 32px 0;
+}
+
+.content {
+  padding-bottom: 64px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 32px;
+  }
+  .header {
+    padding: 40px 0;
+  }
+  .title {
+    font-size: 44px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    padding: 0 64px;
+  }
+  .header {
+    padding: 48px 0;
+  }
+  .content {
+    padding-bottom: 72px;
+  }
+  .title {
+    font-size: 56px;
+  }
+}
