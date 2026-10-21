@@ -1,0 +1,39 @@
+.cursor {
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  z-index: 99999;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.cursor img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+:global(.dark) .cursor img {
+  filter: brightness(0) invert(1);
+}
+
+@media (pointer: fine) {
+  :global(html),
+  :global(body),
+  :global(body *),
+  :global(body *::before),
+  :global(body *::after) {
+    cursor: none !important;
+  }
+}
+
+@media (pointer: coarse) {
+  .cursor {
+    display: none;
+  }
+}

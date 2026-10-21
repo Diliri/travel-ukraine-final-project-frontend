@@ -1,0 +1,41 @@
+.base {
+  font-family: var(--font-family);
+  font-weight: 700;
+  width: 100%;
+  letter-spacing: -0.01em;
+}
+
+/* Базові колірні схеми */
+.colorScheme2 { color: var(--color-scheme-2-text); }
+.colorScheme1 { color: var(--color-scheme-1-text); }
+
+/* --- Варіанти заголовків --- */
+.title {
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.traveller {
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.modal { font-size: 26px; line-height: 1.2;}
+
+/* --- Адаптив --- */
+@media only screen and (min-width: 768px) {
+  .title { font-size: 48px; }
+  .traveller { font-size: 44px; }
+  .modal { font-size: 32px; }
+}
+
+@media only screen and (min-width: 1440px) {
+  .title { font-size: 56px; }
+  .traveller { font-size: 52px; }
+  .modal { font-size: 48px; }
+}
+
+/* --- Вирівнювання --- */
+.left { text-align: left; }
+.center { text-align: center; }
+.right { text-align: right; }
