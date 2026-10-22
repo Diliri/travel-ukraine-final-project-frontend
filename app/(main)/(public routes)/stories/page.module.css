@@ -1,0 +1,283 @@
+.page {
+  width: calc(100% - 32px);
+  margin: 0 auto;
+  padding: 32px 0 64px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin-bottom: 12px;
+  font-size: clamp(32px, 9vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.header p,
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.categories li {
+  padding: 6px 8px;
+  color: rgba(27, 57, 27, 1);
+  font-size: 14px;
+}
+
+.categories .active {
+  border-radius: 999px;
+  background: #f2f2f2;
+  font-weight: 700;
+}
+
+.card {
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  color: rgba(27, 57, 27, 1);
+  background-color: #e0f2de;
+}
+
+.imageLink {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #f1f1f1;
+}
+
+.image {
+  display: block;
+  width: auto;
+  height: 421px;
+  object-fit: cover;
+}
+
+.content {
+  padding: 12px;
+  font-weight: 600;
+}
+
+.meta,
+.footer {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.footer {
+  justify-content: space-between;
+  min-height: 48px;
+  align-items: center;
+}
+
+.readMore {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: solid 1px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  transition: background-color 0.5s ease;
+}
+
+.readMore_flag {
+  display: flex;
+  min-width: 48px;
+  min-height: 48px;
+  margin-left: 16px;
+  align-items: center;
+  justify-content: center;
+  border: solid 1px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease,
+    fill ease 0.5s;
+}
+.readMore_flag:hover,
+.readMore_flag:focus,
+.readMore:hover,
+.readMore:focus {
+  background-color: #4a9849;
+  color: #fff;
+  fill: #fff;
+}
+.readMore_flag:active,
+.readMore:active {
+  background-color: #254c24;
+}
+
+.meta {
+  margin-bottom: 12px;
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.dot {
+  margin: 3px 8px;
+}
+
+.rate {
+  display: flex;
+  font-weight: 400;
+}
+
+.small_flag {
+  margin-left: 6px;
+  align-self: center;
+}
+
+.empty {
+  padding: 32px;
+  border-radius: 12px;
+  background: #f7f7f7;
+  text-align: center;
+}
+
+.status {
+  padding: 20px 0;
+  text-align: center;
+}
+
+.status button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.item {
+  scroll-margin-top: 16px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.item:hover,
+.item:focus {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15);
+}
+a:focus-visible {
+  outline: none;
+}
+@media (min-width: 375px) {
+  .page {
+    width: calc(100% - 40px);
+    max-width: 375px;
+    padding-top: 40px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .categories {
+    gap: 8px 12px;
+    margin-bottom: 32px;
+  }
+
+  .categories li {
+    padding: 8px 12px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .description {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .page {
+    width: calc(100% - 64px);
+    max-width: 768px;
+    padding-top: 48px;
+  }
+
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-size: 48px;
+  }
+
+  .header p {
+    text-align: center;
+  }
+
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .categories {
+    margin-bottom: 40px;
+  }
+
+  .meta,
+  .footer {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .page {
+    width: min(1280px, calc(100% - 96px));
+    max-width: 100%;
+    padding-top: 56px;
+  }
+
+  .header h1 {
+    font-size: 56px;
+  }
+
+  .list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .title {
+    font-size: 26px;
+    line-height: 1.5;
+  }
+}
