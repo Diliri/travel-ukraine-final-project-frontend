@@ -18,12 +18,21 @@ export default function ConfirmModal({ onConfirm, onCancel, loading = false }: C
         aria-labelledby="logout-title"
         onClick={event => event.stopPropagation()}
       >
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={onCancel}
+          aria-label="Закрити вікно"
+        >
+          ×
+        </button>
+
         <h2 id="logout-title">Ви точно хочете вийти?</h2>
-        <p>Ми будемо сумувати 💚</p>
+        <p>Ми будемо сумувати за вами!</p>
 
         <div className={styles.actions}>
           <button onClick={onCancel} disabled={loading}>
-            Скасувати
+            Відмінити
           </button>
           <button onClick={onConfirm} disabled={loading}>
             {loading ? 'Вихід...' : 'Вийти'}

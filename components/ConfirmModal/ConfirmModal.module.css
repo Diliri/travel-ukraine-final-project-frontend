@@ -10,43 +10,100 @@
 }
 
 .modal {
-  width: 100%;
-  max-width: 420px;
-  padding: 32px;
-  border-radius: 16px;
   background: #fff;
-  color: #222;
   text-align: center;
+  color: #000;
+
+  border-radius: 24px;
+  padding: 64px;
+  width: 768px;
+  height: 312px;
+  max-width: 768px;
+  position: relative;
 }
 
 .modal h2 {
-  margin: 0 0 12px;
-  font-size: 24px;
+  margin: 0 0 16px;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .modal p {
-  margin: 0 0 24px;
+  margin: 0 0 32px;
+  font-size: 20px;
+  line-height: 1.5;
 }
 
 .actions {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 24px;
 }
 
 .actions button {
-  padding: 12px 24px;
-  border: 0;
-  border-radius: 8px;
   cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  padding: 6px 12px;
+  width: 203px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.05);
+
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.5;
+  color: #1b391b;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.actions button:hover {
+  border: 1px solid #4a9849;
+  background-color: #def2de;
 }
 
 .actions button:last-child {
-  background: #416b45;
+  background: #4a9849;
   color: #fff;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.5;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.actions button:last-child:hover,
+.actions button:last-child:focus-visible {
+  background-color: #def2de;
+  color: #222;
+  border: 1px solid #4a9849;
 }
 
 .actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #222;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
 }
