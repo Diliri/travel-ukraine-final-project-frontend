@@ -63,9 +63,8 @@ export default function MainLayout({
       <body className={`${montserrat.variable}`}>
         <QueryProvider>
           {/* <Providers>{children}</Providers> функція на день-ніч тему*/}
-          {/* <Header /> */}
+          {/* <Header /> в мейн лейаут*/}
             <main>{children}</main>
-          <Footer />
           <ToastProvider />
           {/* <AuthNavModal /> */}
           <div id="modal-root" />
