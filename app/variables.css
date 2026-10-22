@@ -44,3 +44,7 @@
   --color-scheme-2-foreground: var(--color-mantis-lighter);
   --color-red: #b00101;
 }
+
+:root {
+  --font-family: "Montserrat", sans-serif;
+}
