@@ -1,18 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL; // база з /api
+export async function GET(request: NextRequest) {
+  const backendUrl = process.env.BACKEND_URL;
+
+  if (!backendUrl) {
+    return NextResponse.json({ message: 'BACKEND_URL is not configured' }, { status: 500 });
+  }
+
+  try {
+    const response = await fetch(`${backendUrl}/api/users/me`, {
+      method: 'GET',
+      headers: {
+        Cookie: request.headers.get('cookie') ?? '',
+      },
+      cache: 'no-store',
+    });
+
+    const data = await response.json();
+
+    return NextResponse.json(data, {
+      status: response.status,
+    });
+  } catch {
+    return NextResponse.json({ message: 'Failed to fetch current user' }, { status: 502 });
+  }
+}
 
 export async function PATCH(request: NextRequest) {
-  const cookieStore = await cookies();
-  const body = await request.json();
+  const backendUrl = process.env.BACKEND_URL;
 
-  const res = await fetch(`${BACKEND_URL}/users/me`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", cookie: cookieStore.toString() },
-    body: JSON.stringify(body),
-  });
+  if (!backendUrl) {
+    return NextResponse.json({ message: 'BACKEND_URL is not configured' }, { status: 500 });
+  }
 
-  const data = await res.json().catch(() => null);
-  return NextResponse.json(data, { status: res.status });
+  try {
+    const body = await request.json();
+
+    const response = await fetch(`${backendUrl}/api/users/me`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: request.headers.get('cookie') ?? '',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    return NextResponse.json(data, {
+      status: response.status,
+    });
+  } catch {
+    return NextResponse.json({ message: 'Failed to update profile' }, { status: 502 });
+  }
 }
+
