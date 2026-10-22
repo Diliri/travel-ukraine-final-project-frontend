@@ -1,5 +1,7 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './Hero.module.css';
+
 
 export default function Hero() {
   return (
@@ -16,9 +18,9 @@ export default function Hero() {
             які допоможуть побачити красу природи без шкоди для неї.
           </p>
 
-          <a href="/stories" className={styles.button}>
+          <Link href="/stories" className={styles.button}>
             Долучитись до мандрів
-          </a>
+          </Link>
         </div>
 
         <div className={styles.imageWrapper}>
