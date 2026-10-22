@@ -1,19 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from 'next/server';
 
-// TODO: коли Тімлід заповнить app/api/api.ts та _utils/utils.ts — замінити на їхній інстанс/хелпер.
-const BACKEND_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL; // база з /api на кінці
-
+// Фронт викликає /api/users/avatar, бекенд має маршрут PATCH /api/users/me/avatar
 export async function PATCH(request: NextRequest) {
-  const cookieStore = await cookies();
-  const formData = await request.formData();
+  const backendUrl = process.env.BACKEND_URL;
 
-  const res = await fetch(`${BACKEND_URL}/users/avatar`, {
-    method: "PATCH",
-    headers: { cookie: cookieStore.toString() },
-    body: formData,
-  });
+  if (!backendUrl) {
+    return NextResponse.json({ message: 'BACKEND_URL is not configured' }, { status: 500 });
+  }
 
-  const data = await res.json().catch(() => null);
-  return NextResponse.json(data, { status: res.status });
+  try {
+    const formData = await request.formData();
+
+    const response = await fetch(`${backendUrl}/api/users/me/avatar`, {
+      method: 'PATCH',
+      headers: {
+        Cookie: request.headers.get('cookie') ?? '',
+      },
+      body: formData,
+    });
+
+    const data = await response.json().catch(() => null);
+
+    return NextResponse.json(data, {
+      status: response.status,
+    });
+  } catch {
+    return NextResponse.json({ message: 'Failed to update avatar' }, { status: 502 });
+  }
 }

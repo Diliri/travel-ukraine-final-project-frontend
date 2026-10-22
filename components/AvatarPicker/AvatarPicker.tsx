@@ -11,7 +11,7 @@ const MAX_SIZE_MB = 1; // як у story form
 interface Props {
   currentUrl?: string;
   file: File | null;
-  onSelect: (file: File | null) => void;
+  onSelect: (file: File) => void;
   disabled?: boolean;
 }
 
@@ -26,10 +26,9 @@ export default function AvatarPicker({ currentUrl, file, onSelect, disabled }: P
   }, [preview]);
 
   const openDialog = () => {
-    if (inputRef.current) {
-      inputRef.current.value = ""; // щоб повторний вибір того ж файлу теж спрацьовував
-      inputRef.current.click();
-    }
+    if (!inputRef.current) return;
+    inputRef.current.value = ""; // щоб повторний вибір того ж файлу теж спрацьовував
+    inputRef.current.click();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

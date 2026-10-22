@@ -1,19 +1,31 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from 'next/server';
 
-// TODO: коли Тімлід заповнить app/api/api.ts та _utils/utils.ts — замінити на їхній хелпер.
-const BACKEND_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL; // база з /api на кінці
-
+// Фронт викликає /api/users/password, бекенд має маршрут PATCH /api/users/me/password
 export async function PATCH(request: NextRequest) {
-  const cookieStore = await cookies();
-  const body = await request.json();
+  const backendUrl = process.env.BACKEND_URL;
 
-  const res = await fetch(`${BACKEND_URL}/users/password`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", cookie: cookieStore.toString() },
-    body: JSON.stringify(body),
-  });
+  if (!backendUrl) {
+    return NextResponse.json({ message: 'BACKEND_URL is not configured' }, { status: 500 });
+  }
 
-  const data = await res.json().catch(() => null);
-  return NextResponse.json(data, { status: res.status });
+  try {
+    const body = await request.json();
+
+    const response = await fetch(`${backendUrl}/api/users/me/password`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: request.headers.get('cookie') ?? '',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    return NextResponse.json(data, {
+      status: response.status,
+    });
+  } catch {
+    return NextResponse.json({ message: 'Failed to update password' }, { status: 502 });
+  }
 }

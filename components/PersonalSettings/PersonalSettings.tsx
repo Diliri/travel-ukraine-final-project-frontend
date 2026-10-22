@@ -1,29 +1,31 @@
 "use client";
 
-import { Toaster } from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import ProfileEditForm from "@/components/ProfileEditForm/ProfileEditForm";
 import ChangePasswordForm from "@/components/ChangePasswordForm/ChangePasswordForm";
-import { useProfileUser } from "@/hooks/useProfileUser";
-import { MOCK } from "@/lib/api/profileApi";
+import { CURRENT_USER_KEY, useCurrentUser } from "@/hooks/useCurrentUser";
+import type { ProfileUser } from "@/lib/api/profileApi";
 import css from "./PersonalSettings.module.css";
 
 export default function PersonalSettings() {
-  const { user, setUser } = useProfileUser();
+  const queryClient = useQueryClient();
+  const { data: user, isLoading, isError } = useCurrentUser();
 
-  if (!user) return null; // сторінка приватна: користувач уже в сторі
+  if (isLoading) return <p>Завантаження профілю...</p>;
+  if (isError || !user) return <p>Не вдалося завантажити дані користувача.</p>;
+
+  const handleUpdated = (updated: ProfileUser) =>
+    queryClient.setQueryData(CURRENT_USER_KEY, updated);
 
   return (
     <div className={css.wrapper}>
-      {/* У mock-режимі свій Toaster; у «бойовому» — спільний ToastProvider команди */}
-      {MOCK && <Toaster position="top-right" />}
-
       <section className={css.section}>
-        <h2 className={css.sectionTitle}>Профіль</h2>
-        <ProfileEditForm user={user} onUpdated={setUser} />
+        <h3>Профіль</h3>
+        <ProfileEditForm user={user} onUpdated={handleUpdated} />
       </section>
 
       <section className={css.section}>
-        <h2 className={css.sectionTitle}>Зміна пароля</h2>
+        <h3>Зміна пароля</h3>
         <ChangePasswordForm />
       </section>
     </div>

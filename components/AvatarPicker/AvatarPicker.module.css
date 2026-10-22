@@ -21,7 +21,7 @@
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: var(--ps-fill);
+  background-color: var(--color-mantis-lighter);
 }
 
 .input {
@@ -30,24 +30,19 @@
 
 .button {
   padding: 4px 10px;
-  font: inherit;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.5;
-  color: var(--ps-text);
-  background-color: var(--ps-fill);
-  border: 1px solid var(--ps-border);
-  border-radius: var(--ps-radius);
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease;
+  color: var(--color-scheme-2-text);
+  background-color: var(--opacity-neutral-darkest-5);
+  border: 1px solid var(--color-scheme-2-border);
+  border-radius: 6px;
 }
 
 .button:hover:not(:disabled),
 .button:focus-visible {
-  border-color: var(--ps-primary);
-  background-color: var(--ps-border);
+  border-color: var(--color-mantis-dark);
+  background-color: var(--opacity-neutral-darkest-15);
 }
 
 .button:disabled {

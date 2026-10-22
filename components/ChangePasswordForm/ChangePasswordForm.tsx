@@ -1,83 +1,125 @@
 "use client";
 
-import { ErrorMessage, Field, Form, Formik } from "formik";
-import * as Yup from "yup";
+import { useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
-import { updatePassword } from "@/lib/api/profileApi";
+import FormField from "@/components/PersonalSettings/FormField";
+import {
+  validateConfirmPassword,
+  validateCurrentPassword,
+  validateNewPassword,
+} from "@/components/PersonalSettings/validators";
+import { ApiError, updatePassword } from "@/lib/api/profileApi";
 import css from "@/components/PersonalSettings/form.module.css";
 
-// Validation rules (auth form): password — min 8, max 128, required
-const schema = Yup.object({
-  currentPassword: Yup.string().required("Обов’язкове поле"),
-  newPassword: Yup.string()
-    .min(8, "Мінімум 8 символів")
-    .max(128, "Максимум 128 символів")
-    .notOneOf([Yup.ref("currentPassword")], "Новий пароль має відрізнятись від поточного")
-    .required("Обов’язкове поле"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("newPassword")], "Паролі не збігаються")
-    .required("Обов’язкове поле"),
-});
+type Field = "currentPassword" | "newPassword" | "confirmPassword";
 
-const fields = [
-  { name: "currentPassword", label: "Поточний пароль", autoComplete: "current-password" },
-  { name: "newPassword", label: "Новий пароль", autoComplete: "new-password" },
-  { name: "confirmPassword", label: "Повторіть новий пароль", autoComplete: "new-password" },
-] as const;
+const EMPTY = { currentPassword: "", newPassword: "", confirmPassword: "" };
+const NOT_TOUCHED = { currentPassword: false, newPassword: false, confirmPassword: false };
 
 export default function ChangePasswordForm() {
-  return (
-    <Formik
-      initialValues={{ currentPassword: "", newPassword: "", confirmPassword: "" }}
-      validationSchema={schema}
-      onSubmit={async ({ currentPassword, newPassword }, { resetForm }) => {
-        try {
-          await updatePassword({ currentPassword, newPassword });
-          toast.success("Пароль змінено");
-          resetForm();
-        } catch (error) {
-          toast.error(error instanceof Error ? error.message : "Не вдалося змінити пароль");
-        }
-      }}
-    >
-      {({ dirty, isValid, isSubmitting, errors, touched, resetForm }) => (
-        <Form className={css.form} noValidate>
-          {fields.map(({ name, label, autoComplete }) => (
-            <div key={name} className={css.field}>
-              <label htmlFor={name} className={css.label}>
-                {label}
-              </label>
-              <Field
-                id={name}
-                name={name}
-                type="password"
-                autoComplete={autoComplete}
-                placeholder="********"
-                className={`${css.input} ${errors[name] && touched[name] ? css.inputError : ""}`}
-              />
-              <ErrorMessage name={name} component="p" className={css.error} />
-            </div>
-          ))}
+  const [values, setValues] = useState(EMPTY);
+  const [touched, setTouched] = useState(NOT_TOUCHED);
+  const [serverCurrentError, setServerCurrentError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-          <div className={css.actions}>
-            <button
-              type="submit"
-              className={css.submit}
-              disabled={isSubmitting || !dirty || !isValid}
-            >
-              {isSubmitting ? "Збереження…" : "Змінити пароль"}
-            </button>
-            <button
-              type="button"
-              className={css.cancel}
-              disabled={isSubmitting || !dirty}
-              onClick={() => resetForm()}
-            >
-              Відмінити
-            </button>
-          </div>
-        </Form>
-      )}
-    </Formik>
+  const errors = {
+    currentPassword: serverCurrentError || validateCurrentPassword(values.currentPassword),
+    newPassword: validateNewPassword(values.newPassword, values.currentPassword),
+    confirmPassword: validateConfirmPassword(values.confirmPassword, values.newPassword),
+  };
+  const hasErrors = Boolean(errors.currentPassword || errors.newPassword || errors.confirmPassword);
+  const isDirty = Object.values(values).some(Boolean);
+
+  const handleChange = (field: Field) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValues((prev) => ({ ...prev, [field]: e.target.value }));
+    if (field === "currentPassword") setServerCurrentError("");
+  };
+
+  const handleBlur = (field: Field) => () => setTouched((prev) => ({ ...prev, [field]: true }));
+
+  const reset = () => {
+    setValues(EMPTY);
+    setTouched(NOT_TOUCHED);
+    setServerCurrentError("");
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setTouched({ currentPassword: true, newPassword: true, confirmPassword: true });
+    if (hasErrors) return;
+
+    setIsSubmitting(true);
+    try {
+      await updatePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
+      toast.success("Пароль змінено");
+      reset();
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 400) {
+        setServerCurrentError(error.message); // «Поточний пароль невірний»
+      } else {
+        toast.error(error instanceof Error ? error.message : "Не вдалося змінити пароль");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const show = (field: Field) => (touched[field] || (field === "currentPassword" && serverCurrentError)
+    ? errors[field]
+    : "");
+
+  return (
+    <form className={css.form} onSubmit={handleSubmit} noValidate>
+      <FormField
+        id="current-password"
+        label="Поточний пароль"
+        type="password"
+        autoComplete="current-password"
+        placeholder="********"
+        value={values.currentPassword}
+        onChange={handleChange("currentPassword")}
+        onBlur={handleBlur("currentPassword")}
+        error={show("currentPassword")}
+      />
+      <FormField
+        id="new-password"
+        label="Новий пароль"
+        type="password"
+        autoComplete="new-password"
+        placeholder="********"
+        value={values.newPassword}
+        onChange={handleChange("newPassword")}
+        onBlur={handleBlur("newPassword")}
+        error={show("newPassword")}
+      />
+      <FormField
+        id="confirm-password"
+        label="Повторіть новий пароль"
+        type="password"
+        autoComplete="new-password"
+        placeholder="********"
+        value={values.confirmPassword}
+        onChange={handleChange("confirmPassword")}
+        onBlur={handleBlur("confirmPassword")}
+        error={show("confirmPassword")}
+      />
+
+      <div className={css.actions}>
+        <button type="submit" className={css.submit} disabled={isSubmitting || !isDirty || hasErrors}>
+          {isSubmitting ? "Збереження…" : "Змінити пароль"}
+        </button>
+        <button
+          type="button"
+          className={css.cancel}
+          onClick={reset}
+          disabled={isSubmitting || !isDirty}
+        >
+          Відмінити
+        </button>
+      </div>
+    </form>
   );
 }

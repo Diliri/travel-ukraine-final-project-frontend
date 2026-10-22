@@ -14,6 +14,7 @@
 .label {
   font-size: 16px;
   line-height: 1.5;
+  color: var(--color-scheme-2-text);
 }
 
 .input {
@@ -22,33 +23,33 @@
   font: inherit;
   font-size: 16px;
   line-height: 1.5;
-  color: var(--ps-text);
+  color: var(--color-scheme-2-text);
   background-color: transparent;
-  border: 1px solid var(--ps-border);
-  border-radius: var(--ps-radius);
-  outline: none;
-  transition: border-color 0.2s ease;
+  border: 1px solid var(--color-scheme-2-border);
+  border-radius: 6px;
 }
 
 .input::placeholder {
-  color: rgba(27, 57, 27, 0.5);
+  color: var(--opacity-neutral-darkest-50);
 }
 
 .input:hover,
 .input:focus {
-  border-color: var(--ps-primary);
+  border-color: var(--color-mantis-dark);
 }
 
 .inputError,
 .inputError:hover,
 .inputError:focus {
-  border-color: var(--ps-error);
+  border-color: var(--color-red);
 }
 
 .error {
+  padding: 0;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.4;
-  color: var(--ps-error);
+  color: var(--color-red);
 }
 
 /* Мобільна: «Відмінити» зверху, «Зберегти» знизу (як у макеті); з 768px — в рядок */
@@ -63,39 +64,33 @@
 .cancel {
   height: 48px;
   padding: 6px 12px;
-  font: inherit;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.5;
-  border-radius: var(--ps-radius);
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    opacity 0.2s ease;
+  border-radius: 6px;
 }
 
 .submit {
-  color: var(--ps-white);
-  background-color: var(--ps-primary);
-  border: 1px solid var(--ps-primary);
+  color: var(--color-white);
+  background-color: var(--color-mantis-dark);
+  border: 1px solid var(--color-mantis-dark);
 }
 
 .submit:hover:not(:disabled),
 .submit:focus-visible:not(:disabled) {
-  background-color: var(--ps-primary-hover);
-  border-color: var(--ps-primary-hover);
+  background-color: var(--color-mantis-darker);
+  border-color: var(--color-mantis-darker);
 }
 
 .cancel {
-  color: var(--ps-text);
-  background-color: var(--ps-fill);
-  border: 1px solid var(--ps-border);
+  color: var(--color-scheme-2-text);
+  background-color: var(--opacity-neutral-darkest-5);
+  border: 1px solid var(--color-scheme-2-border);
 }
 
 .cancel:hover:not(:disabled),
 .cancel:focus-visible:not(:disabled) {
-  background-color: var(--ps-border);
+  background-color: var(--opacity-neutral-darkest-15);
 }
 
 .submit:disabled,
