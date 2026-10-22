@@ -2,9 +2,10 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div>
-      <h2>Сторінку не знайдено</h2>
-      <Link href="/">На головну</Link>
-    </div>
+    <main>
+      <h1>404 — Сторінку не знайдено</h1>
+      <p>Сторінка, яку ви шукаєте, не існує або була переміщена.</p>
+      <Link href="/">Повернутися на головну</Link>
+    </main>
   );
 }

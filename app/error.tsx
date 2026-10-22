@@ -1,19 +1,18 @@
 "use client";
 
 export default function Error({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   return (
-    <div>
-      <h2>Щось пішло не так</h2>
-      <p>{error.message}</p>
+    <main>
+      <h1>Сталася помилка</h1>
+      <p>Не вдалося завантажити цю сторінку.</p>
       <button type="button" onClick={() => reset()}>
         Спробувати ще раз
       </button>
-    </div>
+    </main>
   );
 }
