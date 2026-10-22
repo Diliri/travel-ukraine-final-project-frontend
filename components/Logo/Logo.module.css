@@ -1,32 +1,19 @@
 .logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
-  flex-direction: row;
-  gap: 3px;
-  width: 121px;
-  height: 35px;
+  gap: 4px;
+  color: var(--color-scheme-2-text);
+  transition: opacity 0.2s ease;
 }
 
-.icon {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+.logo:hover,
+.logo:focus-visible {
+  opacity: 0.8;
 }
 
 .text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  font-family: var(--font-family);
+  font-size: 18px;
   font-weight: 500;
-  font-size: 17px;
-  line-height: 1;
+  line-height: 100%;
   letter-spacing: -0.01em;
-  color: var(--color-scheme-2-text);
-}
-
-.logo:hover .text,
-.logo:focus-visible .text {
-  color: var(--color-mantis-dark);
 }
