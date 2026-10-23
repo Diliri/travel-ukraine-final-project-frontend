@@ -9,7 +9,6 @@ import ToastProvider from '@/components/ToastProvider/ToastProvider';
 // import AuthNavModal from '@/components/AuthNavModal/AuthNavModal';
 // import { Providers } from './providers/ThemeProvider';
 // import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
@@ -64,7 +63,7 @@ export default function MainLayout({
         <QueryProvider>
           {/* <Providers>{children}</Providers> функція на день-ніч тему*/}
           {/* <Header /> в мейн лейаут*/}
-            <main>{children}</main>
+          {children}
           <ToastProvider />
           {/* <AuthNavModal /> */}
           <div id="modal-root" />

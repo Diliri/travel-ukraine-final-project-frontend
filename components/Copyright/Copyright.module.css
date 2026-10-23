@@ -1,5 +1,4 @@
 .text {
-  font-family: var(--font-family);
   color: var(--color-scheme-2-text);
   max-width: 239px;
   margin: 0 auto;
