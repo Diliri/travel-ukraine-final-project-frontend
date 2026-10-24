@@ -11,17 +11,17 @@
     margin: 48px auto 0;
     height: 48px;
     padding: 0 24px;
-    border: 1px solid #4a9849;
+    border: 1px solid var(--color-mantis-dark);
     border-radius: 8px;
-    background: #4a9849;
-    color: #fff;
+    background: var(--color-mantis-dark);
+    color: var(--color-white);
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .more:hover {
-    background: #1b391b;
+    background: var(--color-mantis-darkest);
 }
 
 @media (min-width: 768px) {

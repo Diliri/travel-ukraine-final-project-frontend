@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import css from './TravellerInfo.module.css';
 
 interface Props {
   name: string;
@@ -12,10 +13,20 @@ export default function TravellerInfo({
   articlesAmount,
 }: Props) {
   return (
-    <div>
-      {avatarUrl && <Image src={avatarUrl} alt={name} width={96} height={96} />}
-      <h2>{name}</h2>
-      <p>Статті: {articlesAmount}</p>
+    <div className={css.wrapper}>
+      {avatarUrl && (
+        <Image
+          className={css.avatar}
+          src={avatarUrl}
+          alt={name}
+          width={130}
+          height={130}
+        />
+      )}
+      <div className={css.text}>
+        <h2 className={css.name}>{name}</h2>
+        <p className={css.count}>Статті: {articlesAmount}</p>
+      </div>
     </div>
   );
 }

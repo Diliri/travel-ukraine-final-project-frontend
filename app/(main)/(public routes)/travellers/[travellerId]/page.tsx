@@ -1,8 +1,10 @@
 import MessageNoStories from '@/components/MessageNoStories/MessageNoStories';
 import TravellerInfo from '@/components/TravellerInfo/TravellerInfo';
+import Link from 'next/link';
+import css from './page.module.css';
 
-const BACKEND_URL = process.env.BACKEND_URL?.trim() || 'http://localhost:4000';
-const API_URL = `${BACKEND_URL}/api`;
+const API_URL = `${process.env.BACKEND_URL?.trim() || 'http://localhost:4000'}/api`;
+
 
 interface Story {
   _id: string;
@@ -42,14 +44,14 @@ export default async function TravellerPage({
   if (!data) return <p>Такий користувач відсутній</p>;
 
   return (
-    <section>
+    <section className={css.section}>
       <TravellerInfo
         name={data.profile.name}
         avatarUrl={data.profile.avatarUrl}
         articlesAmount={data.profile.articlesAmount}
       />
 
-      <h2>Статті Мандрівника</h2>
+      <h2 className={css.title}>Статті Мандрівника</h2>
 
       {data.articles.length === 0 ? (
         <MessageNoStories
@@ -58,9 +60,11 @@ export default async function TravellerPage({
           linkTo="/stories"
         />
       ) : (
-        <ul>
+        <ul className={css.list}>
           {data.articles.map((story) => (
-            <li key={story._id}>{story.title}</li>
+            <li className={css.item} key={story._id}>
+              <Link href={`/stories/${story._id}`}>{story.title}</Link>
+            </li>
           ))}
         </ul>
       )}
