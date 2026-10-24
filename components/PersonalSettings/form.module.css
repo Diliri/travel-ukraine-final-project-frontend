@@ -1,0 +1,123 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-scheme-2-text);
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-scheme-2-text);
+  background-color: transparent;
+  border: 1px solid var(--color-scheme-2-border);
+  border-radius: 6px;
+}
+
+.input::placeholder {
+  color: var(--opacity-neutral-darkest-50);
+}
+
+.input:hover,
+.input:focus {
+  border-color: var(--color-mantis-dark);
+}
+
+.inputError,
+.inputError:hover,
+.inputError:focus {
+  border-color: var(--color-red);
+}
+
+.error {
+  padding: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-red);
+}
+
+/* Мобільна: «Відмінити» зверху, «Зберегти» знизу (як у макеті); з 768px — в рядок */
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.submit,
+.cancel {
+  height: 48px;
+  padding: 6px 12px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  border-radius: 6px;
+}
+
+.submit {
+  color: var(--color-white);
+  background-color: var(--color-mantis-dark);
+  border: 1px solid var(--color-mantis-dark);
+}
+
+.submit:hover:not(:disabled),
+.submit:focus-visible:not(:disabled) {
+  background-color: var(--color-mantis-darker);
+  border-color: var(--color-mantis-darker);
+}
+
+.cancel {
+  color: var(--color-scheme-2-text);
+  background-color: var(--opacity-neutral-darkest-5);
+  border: 1px solid var(--color-scheme-2-border);
+}
+
+.cancel:hover:not(:disabled),
+.cancel:focus-visible:not(:disabled) {
+  background-color: var(--opacity-neutral-darkest-15);
+}
+
+.submit:disabled,
+.cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    flex-direction: row;
+    max-width: 422px;
+    padding-top: 24px;
+  }
+  .submit,
+  .cancel {
+    flex: 1;
+  }
+}
+
+@media (min-width: 1440px) {
+  .label,
+  .input {
+    font-size: 18px;
+  }
+  .submit,
+  .cancel {
+    font-size: 20px;
+  }
+}
