@@ -1,0 +1,42 @@
+.profilePageContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.profilePageUser {
+  margin-bottom: 32px;
+}
+
+.profilePageTabs {
+  margin-bottom: 40px;
+}
+
+.profilePageContent {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .profilePageContainer {
+    padding: 48px 32px 80px;
+  }
+
+  .profilePageUser {
+    margin-bottom: 36px;
+  }
+
+  .profilePageTabs {
+    margin-bottom: 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .profilePageContainer {
+    padding: 64px 32px 100px;
+  }
+
+  .profilePageUser {
+    margin-bottom: 48px;
+  }
+}

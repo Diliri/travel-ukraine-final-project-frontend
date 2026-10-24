@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './TravellerInfo.module.css';
 
 type TravellerInfoProps = {
@@ -7,26 +8,27 @@ type TravellerInfoProps = {
   articlesAmount?: number;
 };
 
-export default function TravellerInfo({
-  name,
-  email,
-  avatarUrl,
-  articlesAmount = 0,
-}: TravellerInfoProps) {
+export default function TravellerInfo({ name, avatarUrl, articlesAmount = 0 }: TravellerInfoProps) {
   return (
-    <section className={styles.profile}>
-      <div className={styles.avatar}>
+    <section className={styles.profileTraveller}>
+      <div className={styles.profileTravellerAvatar}>
         {avatarUrl ? (
-          <img src={avatarUrl} alt={`Аватар ${name}`} />
+          <Image
+            className={styles.profileTravellerAvatarImage}
+            src={avatarUrl}
+            alt={`Аватар ${name}`}
+            width={120}
+            height={120}
+            unoptimized
+          />
         ) : (
           <span>{name.charAt(0).toUpperCase()}</span>
         )}
       </div>
 
-      <div className={styles.info}>
-        <h1>{name}</h1>
-        <p>{email}</p>
-        <p>Мої історії: {articlesAmount}</p>
+      <div className={styles.profileTravellerDetails}>
+        <h2 className={styles.profileTravellerName}>{name}</h2>
+        <p className={styles.profileTravellerArticles}>Статей: {articlesAmount}</p>
       </div>
     </section>
   );
