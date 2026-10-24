@@ -63,7 +63,7 @@ export default function RootLayout({
         <QueryProvider>
           {/* <Providers>{children}</Providers> функція на день-ніч тему*/}
           {/* <Header /> в мейн лейаут*/}
-          <main>{children}</main>
+          {children}
           <ToastProvider />
           {/* <AuthNavModal /> */}
           <div id="modal-root" />
