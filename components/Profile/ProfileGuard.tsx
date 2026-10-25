@@ -3,11 +3,16 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ProfileGuard({ children }: { children: ReactNode }) {
+type ProfileGuardProps = {
+  children: ReactNode;
+};
+
+type AuthStatus = 'loading' | 'authorized' | 'unauthorized' | 'error';
+
+export default function ProfileGuard({ children }: ProfileGuardProps) {
   const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'authorized' | 'unauthorized' | 'error'>(
-    'loading'
-  );
+
+  const [status, setStatus] = useState<AuthStatus>('loading');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -19,6 +24,8 @@ export default function ProfileGuard({ children }: { children: ReactNode }) {
           cache: 'no-store',
           signal: controller.signal,
         });
+
+        if (controller.signal.aborted) return;
 
         if (response.status === 401) {
           setStatus('unauthorized');
@@ -40,6 +47,7 @@ export default function ProfileGuard({ children }: { children: ReactNode }) {
     }
 
     checkAuth();
+
     return () => controller.abort();
   }, [router]);
 
@@ -48,7 +56,7 @@ export default function ProfileGuard({ children }: { children: ReactNode }) {
   }
 
   if (status === 'error') {
-    return <p>Не вдалося перевірити авторизацію. Спробуйте оновити сторінку.</p>;
+    return <p role="alert">Не вдалося перевірити авторизацію. Спробуйте оновити сторінку.</p>;
   }
 
   return <>{children}</>;

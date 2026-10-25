@@ -61,6 +61,7 @@ export function ConfirmModal({
       </div>
     </div>
   );
+  return createPortal(content, document.body);
 }
 
 export default ConfirmModal;

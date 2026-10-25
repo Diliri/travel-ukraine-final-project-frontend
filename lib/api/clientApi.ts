@@ -14,8 +14,12 @@ export type RegisterRequest = {
   password: string;
 };
 
-export const register = async (data: RegisterRequest) => {
-  const res = await nextServer.post<User>('/auth/register', data);
+export type RegisterResponse = {
+  user: User;
+};
+
+export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
+  const res = await nextServer.post<RegisterResponse>('/auth/register', data);
   return res.data;
 };
 

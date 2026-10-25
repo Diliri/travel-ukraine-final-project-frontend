@@ -1,0 +1,12 @@
+.hero {
+    width: 100%;
+}
+
+.container {
+    width: 100%;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+}
