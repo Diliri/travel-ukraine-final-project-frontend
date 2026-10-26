@@ -1,12 +1,219 @@
+/* =========================================
+   HERO — MOBILE FIRST
+   ========================================= */
+
+/* MOBILE: 320px+ */
+
 .hero {
     width: 100%;
+    padding: 64px 20px;
+    background-color: #eef8ee;
 }
 
 .container {
     width: 100%;
-}
-
-.content {
     display: flex;
     flex-direction: column;
+    gap: 24px;
+}
+
+/* =========================================
+   IMAGE
+   ========================================= */
+
+.imageWrapper {
+    order: -1;
+
+    width: 100%;
+    height: 469px;
+    flex-shrink: 0;
+
+    background-image: url("/images/heromobile.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* =========================================
+   TEXT COLUMN
+   ========================================= */
+
+.textColumn {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Заголовок + описание */
+
+.textContent {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* =========================================
+   TITLE
+   ========================================= */
+
+.title {
+    width: 100%;
+    margin: 0;
+
+    font-family: var(--font-family), sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+
+    color: rgb(27, 57, 27);
+}
+
+/* =========================================
+   DESCRIPTION
+   ========================================= */
+
+.description {
+    width: 100%;
+    margin: 0;
+
+    font-family: var(--font-family), sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0;
+
+    color: rgb(27, 57, 27);
+}
+
+/* =========================================
+   BUTTON
+   ========================================= */
+/* Контейнер кнопки */
+.actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Кнопка */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: fit-content;
+    max-width: 100%;
+    min-height: 39px;
+
+    padding: 6px 12px;
+
+    background-color: rgb(74, 152, 73);
+    border: 1px solid rgb(74, 152, 73);
+    border-radius: 4px;
+
+    font-family: var(--font-family), sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+}
+
+.button:hover {
+    background-color: rgb(58, 125, 57);
+}
+
+/* =========================================
+   TABLET: 768px+
+   ========================================= */
+
+@media screen and (min-width: 768px) {
+    .hero {
+        padding: 64px 32px;
+    }
+
+    .imageWrapper {
+        height: 469px;
+        background-image: url("/images/herotablet.jpg");
+    }
+
+    .title {
+        font-size: 48px;
+    }
+
+    .description {
+        font-size: 18px;
+    }
+          .actions {
+              justify-content: flex-start;
+          }
+
+    .button {
+        width: auto;
+    }
+}
+
+/* =========================================
+   DESKTOP: 1440px+
+   ========================================= */
+
+@media screen and (min-width: 1440px) {
+    .hero {
+        padding: 72px 64px;
+    }
+
+    .container {
+        max-width: 1312px;
+        margin: 0 auto;
+
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .textColumn {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 580px;
+
+        justify-content: center;
+        gap: 32px;
+    }
+
+    .textContent {
+        gap: 32px;
+    }
+
+    .title {
+        font-size: 56px;
+    }
+
+    .description {
+        font-size: 20px;
+    }
+
+    .actions {
+        width: auto;
+    }
+
+    .button {
+        width: auto;
+    }
+
+    .imageWrapper {
+        order: 0;
+
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+        height: 580px;
+        background-image: url("/images/herodesktop.jpg");
+    }
 }
