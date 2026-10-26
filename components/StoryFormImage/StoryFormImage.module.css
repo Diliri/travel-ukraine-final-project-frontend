@@ -1,0 +1,96 @@
+.field {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.uploadArea {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.imageFrame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 865 / 576;
+  border-radius: 12px;
+  background-color: var(--color-neutral-lighter);
+}
+
+.imageFrame::after {
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  content: '';
+  pointer-events: none;
+}
+
+.imageFrame:hover::after,
+.imageFrame:focus-visible::after,
+.dragging::after {
+  border-color: var(--color-mantis-dark);
+}
+
+.image {
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.dropMessage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(238, 248, 238, 0.86);
+  color: var(--color-scheme-2-text);
+  font-size: 16px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.uploadButton {
+  padding: 4px 10px;
+  border: 1px solid var(--color-scheme-2-border);
+  border-radius: 6px;
+  background-color: var(--opacity-neutral-darkest-5);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.uploadButton:hover,
+.uploadButton:focus-visible {
+  border-color: var(--color-mantis-dark);
+  background-color: var(--color-scheme-2-foreground);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-red);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@media screen and (min-width: 1440px) {
+  .label {
+    font-size: 18px;
+  }
+
+  .uploadButton {
+    font-size: 20px;
+  }
+}
