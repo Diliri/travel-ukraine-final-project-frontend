@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import StoryDetails, { type StoryDetailsData } from '@/components/StoryDetails/StoryDetails';
 import StoriesList, { type Story as StoryCard } from '../StoriesList';
 import SaveStory from './SaveStory';
 import styles from './page.module.css';
@@ -91,45 +91,45 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
     [...related, ...(latest ?? [])].filter(isCard).filter(item => item._id !== id)
       .map(item => [item._id, item]),
   ).values()].slice(0, 3);
-  const author = story.ownerId && typeof story.ownerId === 'object'
-    ? story.ownerId.name || story.author : story.author;
-  const date = new Date(story.date || story.createdAt || '');
-  const dateLabel = Number.isNaN(date.getTime()) ? null
-    : new Intl.DateTimeFormat('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(date);
-  const text = typeof story.article === 'string' && story.article ? story.article : story.desc || '';
+  let owner: StoryDetailsData['ownerId'] = null;
+  if (story.ownerId && typeof story.ownerId === 'object') {
+    owner = { _id: '', name: story.ownerId.name };
+  } else if (typeof story.ownerId === 'string') {
+    try {
+      const response = await fetch(apiUrl(`/api/users/${story.ownerId}`), {
+        cache: 'no-store', signal: AbortSignal.timeout(10_000),
+      });
+      if (response.ok) {
+        const payload = await response.json();
+        owner = payload?.profile ?? payload?.data?.profile ?? null;
+      }
+    } catch {
+      owner = null;
+    }
+  }
+  if (!owner && story.author) owner = { _id: '', name: story.author };
+  const details: StoryDetailsData = {
+    _id: id,
+    title: story.title,
+    img: story.img,
+    article: story.article || story.desc,
+    date: story.date || story.createdAt || '',
+    ownerId: owner,
+    category: categoryName ? { _id: categoryId || '', category: categoryName } : null,
+  };
 
   return (
     <div className={styles.page}>
-      <article aria-labelledby="story-title">
-        <header className={styles.hero}>
-          <div className={styles.heading}>
-            <Link className={styles.back} href="/stories">
-              <Image src="/svg/story-chevron-left.svg" alt="" width={24} height={24} />
-              Всі статті
-            </Link>
-            <h1 id="story-title">{story.title}</h1>
-            <div className={styles.metadata}>
-              <p><strong>Автор статті</strong> {author || 'Мандрівник'}</p>
-              {dateLabel && <p><strong>Опубліковано</strong> <time dateTime={date.toISOString()}>{dateLabel}</time></p>}
-              {categoryName && <span className={styles.tag}>{categoryName}</span>}
-            </div>
-          </div>
-          {story.img && <Image className={styles.image} src={story.img} alt={story.title}
-            width={1312} height={874} unoptimized loading="eager" />}
-        </header>
-        <div className={styles.body}>
-          <div className={styles.text}>
-            {text.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
-          </div>
-          <SaveStory key={id} storyId={id} />
-        </div>
-      </article>
-      <section className={styles.recommendations} aria-labelledby="recommendations-title">
+      <StoryDetails story={details} />
+      <div className="container">
+        <div className={styles.body}><SaveStory key={id} storyId={id} /></div>
+        <section className={styles.recommendations} aria-labelledby="recommendations-title">
         <h2 id="recommendations-title">Вам також сподобається</h2>
         {recommendations.length > 0 ? (
           <StoriesList key={id} initialStories={recommendations} initialNextStories={[]} mode="recommendations" />
         ) : <p>{latest === null ? 'Не вдалося завантажити рекомендації.' : 'Інших історій поки немає.'}</p>}
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

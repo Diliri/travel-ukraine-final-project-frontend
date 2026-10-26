@@ -1,0 +1,152 @@
+/* ===== Верхня частина (#67) ===== */
+.header {
+  padding-top: 24px;
+}
+
+.headerInner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.imageWrap {
+  order: -1;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-neutral-darkest);
+}
+
+.backIcon {
+  width: 24px;
+  height: 12px;
+  fill: var(--color-mantis-darkest);
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--color-mantis-dark);
+}
+
+.title {
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--color-scheme-2-text);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.metaRow {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-scheme-2-text);
+}
+
+.metaLabel {
+  font-weight: 700;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-darkest);
+  background-color: var(--opacity-neutral-darkest-5);
+}
+
+/* ===== Текст історії (#68) ===== */
+.body {
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+.bodyInner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.paragraph {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-scheme-2-text);
+}
+
+/* ===== Desktop ===== */
+@media screen and (min-width: 1440px) {
+  .header {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  .headerInner {
+    display: grid;
+    grid-template-columns: 533fr 755fr;
+    align-items: start;
+    gap: 24px;
+  }
+
+  .imageWrap {
+    order: 0;
+  }
+
+  .back {
+    font-size: 20px;
+  }
+
+  .metaRow {
+    font-size: 18px;
+  }
+
+  .body {
+    padding-top: 72px;
+    padding-bottom: 48px;
+  }
+
+  .bodyInner {
+    max-width: 865px;
+    margin: 0 auto;
+  }
+
+  .paragraph {
+    font-size: 18px;
+  }
+}
