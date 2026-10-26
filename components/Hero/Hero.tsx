@@ -30,9 +30,7 @@ export default function Hero() {
         </div>
 
         {/* Второй блок — фотография */}
-        <div className={styles.imageWrapper}>
-          {/* Здесь фотографию из Figma */}
-        </div>
+        <div className={styles.imageWrapper} role="img" aria-label="Гірський пейзаж України" />
 
       </div>
     </section>
