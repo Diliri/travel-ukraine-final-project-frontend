@@ -37,3 +37,15 @@ export interface ProfileStoriesResponse {
   totalItems: number;
   totalPages: number;
 }
+
+export type StoryCategory = {
+  _id: string;
+  category: string;
+};
+
+export type CreateStoryFormValues = {
+  image: File | null;
+  title: string;
+  category: string;
+  article: string;
+};
