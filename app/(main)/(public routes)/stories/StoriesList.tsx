@@ -2,13 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import Pagination from '@/components/Pagination/Pagination';
 import styles from './page.module.css';
 
-type Story = {
+export type Story = {
   _id: string;
-  ownerId?: { name: string } | string;
+  ownerId?: { name: string } | string | null;
   img: string;
   title: string;
   desc?: string;
@@ -20,6 +21,9 @@ type Story = {
 
 type StoriesListProps = {
   initialStories: Story[];
+  initialNextStories?: Story[];
+  pageSize?: 8 | 9;
+  mode?: 'all' | 'recommendations';
 };
 type Category = {
   _id: string;
@@ -56,22 +60,38 @@ function isCategory(value: unknown): value is Category {
   );
 }
 
-export default function StoriesList({ initialStories }: StoriesListProps) {
-  const pathname = usePathname();
+async function fetchStoriesPage(page: number, limit: number, category: string): Promise<Story[]> {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (category) params.set('category', category);
+  const response = await fetch(`/api/stories?${params}`);
+  if (!response.ok) throw new Error(`Не вдалося завантажити історії: ${response.status}`);
+  const data: unknown = await response.json();
+  if (!Array.isArray(data) || !data.every(isStory)) {
+    throw new Error('Сервер повернув некоректний список історій');
+  }
+  return data;
+}
+
+export default function StoriesList({ initialStories, initialNextStories, pageSize = 9, mode = 'all' }: StoriesListProps) {
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [isFiltering, setIsFiltering] = useState(false);
   const [stories, setStories] = useState(initialStories);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
-  const [limit, setLimit] = useState<8 | 9>(9);
+  const limit = pageSize;
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(initialStories.length === 9);
+  const [hasMore, setHasMore] = useState(
+    initialNextStories ? initialNextStories.length > 0 : initialStories.length === pageSize
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const loadingRef = useRef(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const nextStoriesRef = useRef(initialNextStories);
   const pendingScrollId = useRef<string | null>(null);
 
   useEffect(() => {
+    if (mode === 'recommendations') return;
     const controller = new AbortController();
 
     const loadCategories = async () => {
@@ -102,56 +122,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
 
     void loadCategories();
     return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 1440px)');
-
-    const updateLimit = async (nextLimit: 8 | 9) => {
-      if (nextLimit === limit || loadingRef.current) {
-        return;
-      }
-
-      loadingRef.current = true;
-      setIsLoading(true);
-
-      try {
-        const response = await fetch(`/api/stories?limit=${nextLimit}&page=1`);
-        if (!response.ok) {
-          throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-        }
-
-        const data: unknown = await response.json();
-        if (!Array.isArray(data) || !data.every(isStory)) {
-          throw new Error('Сервер повернув некоректний список історій');
-        }
-
-        setStories(data);
-        setLimit(nextLimit);
-        setPage(1);
-        setHasMore(data.length === nextLimit);
-        setError(null);
-      } catch (requestError) {
-        setError(
-          requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
-        );
-      } finally {
-        loadingRef.current = false;
-        setIsLoading(false);
-      }
-    };
-
-    const handleChange = (event: MediaQueryList | MediaQueryListEvent) => {
-      void updateLimit(event.matches ? 9 : 8);
-    };
-
-    if ((desktop.matches ? 9 : 8) !== limit) {
-      handleChange(desktop);
-    }
-    desktop.addEventListener('change', handleChange);
-
-    return () => desktop.removeEventListener('change', handleChange);
-  }, [limit]);
+  }, [mode]);
 
   const loadNextPage = useCallback(async () => {
     if (loadingRef.current || !hasMore) {
@@ -164,22 +135,22 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
 
     try {
       const nextPage = page + 1;
-      const response = await fetch(`/api/stories?limit=${limit}&page=${nextPage}`);
-      if (!response.ok) {
-        throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-      }
-
-      const data: unknown = await response.json();
-      if (!Array.isArray(data) || !data.every(isStory)) {
-        throw new Error('Сервер повернув некоректний список історій');
-      }
+      const data = nextStoriesRef.current ?? await fetchStoriesPage(nextPage, limit, selectedCategory);
+      // API повертає масив без загальної кількості історій.
+      const followingPage = data.length === limit
+        ? await fetchStoriesPage(nextPage + 1, limit, selectedCategory)
+        : [];
 
       if (data.length > 0) {
         pendingScrollId.current = data[0]._id;
-        setStories(currentStories => [...currentStories, ...data]);
+        setStories(currentStories => {
+          const existingIds = new Set(currentStories.map(story => story._id));
+          return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
+        });
         setPage(nextPage);
       }
-      setHasMore(data.length === limit);
+      nextStoriesRef.current = followingPage;
+      setHasMore(followingPage.length > 0);
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
@@ -188,26 +159,33 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       loadingRef.current = false;
       setIsLoading(false);
     }
-  }, [hasMore, limit, page]);
+  }, [hasMore, limit, page, selectedCategory]);
 
-  useEffect(() => {
-    const endElement = endRef.current;
-    if (!endElement || !hasMore || error) {
-      return;
+  const changeCategory = async (category: string) => {
+    if (loadingRef.current || category === selectedCategory) return;
+    loadingRef.current = true;
+    setIsLoading(true);
+    setIsFiltering(true);
+    setError(null);
+    try {
+      const data = await fetchStoriesPage(1, limit, category);
+      const followingPage = data.length === limit
+        ? await fetchStoriesPage(2, limit, category)
+        : [];
+      pendingScrollId.current = null;
+      nextStoriesRef.current = followingPage;
+      setStories(data);
+      setSelectedCategory(category);
+      setPage(1);
+      setHasMore(followingPage.length > 0);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії');
+    } finally {
+      loadingRef.current = false;
+      setIsLoading(false);
+      setIsFiltering(false);
     }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          void loadNextPage();
-        }
-      },
-      { rootMargin: '10px' }
-    );
-
-    observer.observe(endElement);
-    return () => observer.disconnect();
-  }, [error, hasMore, loadNextPage]);
+  };
 
   useEffect(() => {
     const storyId = pendingScrollId.current;
@@ -217,7 +195,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
 
     pendingScrollId.current = null;
     document.getElementById(`story-${storyId}`)?.scrollIntoView({
-      behavior: 'smooth',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
       block: 'start',
     });
   }, [stories]);
@@ -254,31 +232,50 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
     }
   };
 
-  if (stories.length === 0 && !error) {
-    return <p className={styles.empty}>Історій поки немає.</p>;
-  }
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
 
   return (
     <>
-      {categoriesError ? (
+      {mode === 'all' && (categoriesError ? (
         <p role="alert">{categoriesError}</p>
       ) : (
         categories.length > 0 && (
-          <ul className={styles.categories} aria-label="Категорії статей">
-            <li
-              className={pathname === '/stories' ? styles.active : undefined}
-              aria-current={pathname === '/stories' ? 'page' : undefined}
-            >
-              Усі категорії
-            </li>
-            {categories.map(category => (
-              <li key={category._id}>{category.category}</li>
-            ))}
-          </ul>
+          <div aria-busy={isFiltering}>
+            <label className={styles.categorySelect}>
+              Категорії
+              <select
+                value={selectedCategory}
+                disabled={isLoading}
+                onChange={event => void changeCategory(event.target.value)}
+              >
+                <option value="">Всі статті</option>
+                {categories.map(category => (
+                  <option key={category._id} value={category.category}>{category.category}</option>
+                ))}
+              </select>
+            </label>
+            <ul className={styles.categories} aria-label="Категорії статей">
+              {[{ _id: 'all', category: '' }, ...categories].map(category => (
+                <li key={category._id}>
+                  <button
+                    type="button"
+                    className={selectedCategory === category.category ? styles.active : undefined}
+                    aria-pressed={selectedCategory === category.category}
+                    disabled={isLoading}
+                    onClick={() => void changeCategory(category.category)}
+                  >
+                    {category.category || 'Всі статті'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )
-      )}
+      ))}
       {stories.length > 0 && (
-        <ul className={styles.list} data-limit={limit}>
+        <ul id="stories-list" className={`${styles.list} ${mode === 'recommendations' ? styles.recommendedList : ''}`} data-limit={limit} aria-busy={isLoading}>
           {stories.map(story => (
             <li className={styles.item} id={`story-${story._id}`} key={story._id}>
               <article className={styles.card}>
@@ -299,7 +296,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
                 <div className={styles.content}>
                   <p className={styles.meta}>
                     <span>
-                      {typeof story.ownerId === 'object'
+                      {story.ownerId && typeof story.ownerId === 'object'
                         ? story.ownerId.name
                         : (story.author ?? 'Мандрівник')}{' '}
                       <svg
@@ -373,18 +370,23 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
           ))}
         </ul>
       )}
-      <div ref={endRef} aria-hidden="true" />
-      {isLoading && <p className={styles.status}>Завантаження історій…</p>}
+      {stories.length === 0 && !isLoading && !error && (
+        <p className={styles.empty}>Історій у цій категорії поки немає.</p>
+      )}
+      {isFiltering && <p className={styles.status} role="status">Завантаження історій…</p>}
+      {mode === 'all' && !isFiltering && <Pagination
+        hasMore={hasMore}
+        isLoading={isLoading}
+        onLoadMore={() => void loadNextPage()}
+        controls="stories-list"
+      />}
+      <span className="visually-hidden" role="status">
+        {isLoading ? 'Завантаження історій…' : `Завантажено історій: ${stories.length}`}
+      </span>
       {error && (
         <div className={styles.status} role="alert">
           <p>{error}</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            Оновити сторінку
-          </button>
         </div>
-      )}
-      {!hasMore && stories.length > 0 && (
-        <p className={styles.status}>Ви переглянули всі історії.</p>
       )}
     </>
   );

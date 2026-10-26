@@ -33,15 +33,15 @@ function isStory(value: unknown): value is Story {
   );
 }
 
-async function getStories(limit: 8 | 9): Promise<Story[]> {
+async function getStories(limit: 8 | 9, page = 1): Promise<Story[]> {
   const configuredBackendUrl =
     process.env.BACKEND_URL?.trim() || 'http://localhost:3000';
   const backendUrl = /^[a-z][a-z\d+.-]*:\/\//i.test(configuredBackendUrl)
     ? configuredBackendUrl
     : `http://${configuredBackendUrl}`;
   const storiesUrl = new URL('/api/stories', backendUrl);
-  storiesUrl.searchParams.set('limit', String(limit));
-  storiesUrl.searchParams.set('page', '1');
+  storiesUrl.searchParams.set('perPage', String(limit));
+  storiesUrl.searchParams.set('page', String(page));
 
   if (!['http:', 'https:'].includes(storiesUrl.protocol)) {
     throw new Error('BACKEND_URL має використовувати http:// або https://');
@@ -49,6 +49,7 @@ async function getStories(limit: 8 | 9): Promise<Story[]> {
 
   const response = await fetch(storiesUrl, {
     cache: 'no-store',
+    signal: AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {
@@ -64,19 +65,34 @@ async function getStories(limit: 8 | 9): Promise<Story[]> {
 }
 
 export default async function StoriesPage() {
-  const stories = await getStories(9);
+  let stories: Story[] = [];
+  let loadFailed = false;
+
+  try {
+    stories = await getStories(9);
+  } catch {
+    loadFailed = true;
+  }
+  const nextStories = stories.length === 9
+    ? await getStories(9, 2).catch(() => undefined)
+    : [];
 
   return (
-    <main className={styles.page}>
+    <section className={styles.page} aria-labelledby="stories-title">
       <header className={styles.header}>
-        <h1>Статті</h1>
+        <h1 id="stories-title">Статті</h1>
       </header>
 
-      {stories.length === 0 ? (
-        <p className={styles.empty}>Історій поки немає.</p>
+      {loadFailed ? (
+        <div className={styles.status} role="alert">
+          <p>Не вдалося завантажити історії. Спробуйте ще раз трохи пізніше.</p>
+          <form action="/stories" method="get">
+            <button type="submit">Спробувати ще раз</button>
+          </form>
+        </div>
       ) : (
-        <StoriesList initialStories={stories} />
+        <StoriesList initialStories={stories} initialNextStories={nextStories} />
       )}
-    </main>
+    </section>
   );
 }

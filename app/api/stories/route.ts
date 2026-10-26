@@ -29,8 +29,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  storiesUrl.searchParams.set('limit', limit);
+  storiesUrl.searchParams.set('perPage', limit);
   storiesUrl.searchParams.set('page', page);
+  const category = request.nextUrl.searchParams.get('category');
+  if (category) storiesUrl.searchParams.set('category', category);
   const response = await fetch(storiesUrl, { cache: 'no-store' });
 
   return new Response(response.body, {
