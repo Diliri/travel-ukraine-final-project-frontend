@@ -1,0 +1,42 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar {
+    flex-shrink: 0;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.name {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-mantis-darkest);
+}
+
+.count {
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--color-mantis-darkest);
+}
+
+@media (min-width: 768px) {
+    .wrapper {
+        gap: 24px;
+    }
+
+    .name {
+        font-size: 32px;
+    }
+}
