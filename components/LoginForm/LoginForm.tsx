@@ -6,7 +6,6 @@
 'use client';
 
 import css from "./LoginForm.module.css"
-import AuthNavigation from "../AuthNavigation/AuthNavigation";
 
 import { isAxiosError } from "axios";
 import { useState } from 'react';
@@ -27,6 +26,16 @@ const initialLoginValues: LoginValues = {
   email: "",
   password: "",
 };
+
+function getErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const data = error.response?.data as { message?: string } | undefined;
+    return data?.message || "Сталася помилка. Спробуйте ще раз.";
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Сталася помилка. Спробуйте ще раз.";
+}
 
 const LoginForm = () => {
   const router = useRouter();
@@ -71,7 +80,6 @@ const LoginForm = () => {
 
   return (
     <div className={css.content}>
-      <AuthNavigation />
           <div className={css.heading}>
               <h1 className={css.title}>Вхід</h1>
               <h2 className={css.subtitle}>Вітаємо знову у спільноту мандрівників!</h2>
