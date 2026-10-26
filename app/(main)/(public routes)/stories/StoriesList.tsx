@@ -66,7 +66,6 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
   const [hasMore, setHasMore] = useState(initialStories.length === 9);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const loadingRef = useRef(false);
   const endRef = useRef<HTMLDivElement>(null);
   const pendingScrollId = useRef<string | null>(null);
@@ -222,38 +221,6 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
     });
   }, [stories]);
 
-  const toggleFavorite = async (storyId: string) => {
-    const shouldAdd = !favoriteStoryIds[storyId];
-
-    try {
-      const response = await fetch(`/api/stories/${storyId}/favorite`, {
-        method: shouldAdd ? 'POST' : 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { message?: string }
-          | null;
-        throw new Error(payload?.message || 'Не вдалося оновити список улюблених');
-      }
-
-      setFavoriteStoryIds(current => ({
-        ...current,
-        [storyId]: shouldAdd,
-      }));
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Не вдалося оновити список улюблених',
-      );
-    }
-  };
-
   if (stories.length === 0 && !error) {
     return <p className={styles.empty}>Історій поки немає.</p>;
   }
@@ -341,18 +308,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
                     <Link className={styles.readMore} href={`/stories/${story._id}`}>
                       Переглянути статтю
                     </Link>
-                    <button
-                      type="button"
-                      className={styles.readMore_flag}
-                      aria-label={
-                        favoriteStoryIds[story._id] ? 'Видалити з улюблених' : 'Додати в улюблені'
-                      }
-                      onClick={() => void toggleFavorite(story._id)}
-                      style={{
-                        color: favoriteStoryIds[story._id] ? '#fff' : undefined,
-                        backgroundColor: favoriteStoryIds[story._id] ? '#4a9849' : undefined,
-                      }}
-                    >
+                    <Link className={styles.readMore_flag} href={`/stories/${story._id}/favorite`}>
                       <svg
                         width="24"
                         height="24"
@@ -365,7 +321,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
                           fill="currentColor"
                         />
                       </svg>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </article>

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 import toast from "react-hot-toast";
 import AuthNavigation from "@/components/AuthNavigation/AuthNavigation";
-import { register } from "@/lib/api/clientApi";
+import { login, register } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import {
   loginSchema,
@@ -252,9 +252,20 @@ export default function AuthForm({ type }: AuthFormProps) {
         validationSchema={loginSchema}
         validateOnBlur
         validateOnChange={false}
-        onSubmit={async (_values, { setSubmitting }) => {
-          toast.error("Логін ще в розробці");
-          setSubmitting(false);
+        onSubmit={async (values, { setSubmitting }) => {
+          try {
+            const user = await login({
+              email: values.email.trim(),
+              password: values.password,
+            });
+            setUser(user);
+            toast.success("Вхід успішний");
+            router.push("/profile");
+          } catch (error) {
+            toast.error(getErrorMessage(error));
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         {({ isSubmitting, errors, touched }) => (
