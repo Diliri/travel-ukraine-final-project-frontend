@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useAuthStore } from '@/lib/store/authStore';
 import { ConfirmModal } from '@/components/ConfirmModal/ConfirmModal';
 import { logout } from '@/lib/api/clientApi';
-import { RxExit } from "react-icons/rx";
 import css from './UserBar.module.css';
 
 export const UserBar = () => {
@@ -42,7 +41,14 @@ export const UserBar = () => {
         aria-label="Вийти з системи"
         onClick={() => setIsModalOpen(true)}
       >
-        <RxExit  size={20} />
+        <Image
+          src="/svg/logout-icon.svg"
+          alt=""
+          width={18}
+          height={19}
+          className={css.logoutIcon}
+          unoptimized
+        />
       </button>
 
       <ConfirmModal
