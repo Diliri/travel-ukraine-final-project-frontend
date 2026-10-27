@@ -116,7 +116,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       setIsLoading(true);
 
       try {
-        const response = await fetch(`/api/stories?limit=${nextLimit}&page=1`);
+        const response = await fetch(`/api/stories?perPage=${nextLimit}&page=1`);
         if (!response.ok) {
           throw new Error(`Не вдалося завантажити історії: ${response.status}`);
         }
@@ -164,7 +164,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
 
     try {
       const nextPage = page + 1;
-      const response = await fetch(`/api/stories?limit=${limit}&page=${nextPage}`);
+      const response = await fetch(`/api/stories?perPage=${limit}&page=${nextPage}`);
       if (!response.ok) {
         throw new Error(`Не вдалося завантажити історії: ${response.status}`);
       }
