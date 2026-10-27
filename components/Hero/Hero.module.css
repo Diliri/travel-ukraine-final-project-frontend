@@ -161,28 +161,34 @@
 }
 
 /* =========================================
-   DESKTOP: 1440px+
+   DESKTOP: 1024px+
    ========================================= */
 
-@media screen and (min-width: 1440px) {
+@media screen and (min-width: 1024px) {
     .hero {
         padding: 72px 64px;
     }
 
     .container {
+        width: 100%;
         max-width: 1312px;
         margin: 0 auto;
 
+        display: flex;
         flex-direction: row;
         align-items: center;
         gap: 24px;
     }
 
+    /* ТЕКСТ СЛЕВА */
     .textColumn {
+        order: 1;
+
         flex: 1 1 0;
         min-width: 0;
-        height: 580px;
 
+        display: flex;
+        flex-direction: column;
         justify-content: center;
         gap: 32px;
     }
@@ -200,20 +206,20 @@
     }
 
     .actions {
-        width: auto;
+        justify-content: flex-start;
     }
 
-    .button {
-        width: auto;
-    }
-
+    /* ФОТОГРАФИЯ СПРАВА */
     .imageWrapper {
-        order: 0;
+        order: 2;
 
         flex: 1 1 0;
         min-width: 0;
         width: auto;
         height: 580px;
-        background-image: url("/images/herodesktop.jpg");
+
+        background-image: url("/images/herodesk.jpg");
+        background-size: cover;
+        background-position: center;
     }
 }

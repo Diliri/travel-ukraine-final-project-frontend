@@ -1,0 +1,29 @@
+/* =========================================
+   POPULAR STORIES — MOBILE FIRST
+   ========================================= */
+
+.popularStories {
+    width: 100%;
+    min-height: 895px;
+    padding: 64px 20px;
+    background-color: #eef8ee;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 335px;
+    margin: 0 auto;
+}
+.title {
+    width: 100%;
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+
+    color: #000000;
+}
