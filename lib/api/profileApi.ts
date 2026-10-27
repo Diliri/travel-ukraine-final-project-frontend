@@ -4,6 +4,7 @@ export interface ProfileUser {
   email: string;
   avatarUrl?: string;
   articlesAmount?: number;
+  savedArticles?: string[];
 }
 
 export class ApiError extends Error {

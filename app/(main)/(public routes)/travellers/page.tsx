@@ -1,7 +1,7 @@
 import TravellersList, { type Traveller } from '@/components/TravellersList/TravellersList';
 import css from './page.module.css';
 
-const BACKEND_URL = process.env.BACKEND_URL?.trim() || 'http://localhost:4000';
+const BACKEND_URL = process.env.BACKEND_URL?.trim() || 'http://localhost:3000';
 
 function isTraveller(value: unknown): value is Traveller {
   return (
@@ -46,28 +46,39 @@ function parseTravellerPage(
 }
 
 async function getTravellers(): Promise<Traveller[]> {
-  const travellers: Traveller[] = [];
-  let page = 1;
-  let hasNextPage = true;
+  const travellersUrl = new URL('/api/users', BACKEND_URL);
+  travellersUrl.searchParams.set('page', '1');
+  travellersUrl.searchParams.set('perPage', '100');
 
-  while (hasNextPage) {
-    const url = new URL('/api/users', BACKEND_URL);
-    url.searchParams.set('page', String(page));
-    url.searchParams.set('perPage', '100');
+  const res = await fetch(travellersUrl, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Не вдалося завантажити мандрівників');
 
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      throw new Error(`Не вдалося завантажити мандрівників: ${res.status}`);
-    }
+  const payload: unknown = await res.json();
+  const travellers =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'travellers' in payload &&
+    Array.isArray(payload.travellers)
+      ? payload.travellers
+      : null;
 
-    const result = parseTravellerPage(await res.json());
-    if (result.hasNextPage && result.travellers.length === 0) {
-      throw new Error('Сервер повернув порожню сторінку мандрівників із наступною сторінкою');
-    }
-
-    travellers.push(...result.travellers);
-    hasNextPage = result.hasNextPage;
-    page += 1;
+  if (
+    !Array.isArray(travellers) ||
+    !travellers.every(
+      (traveller): traveller is Traveller =>
+        typeof traveller === 'object' &&
+        traveller !== null &&
+        '_id' in traveller &&
+        typeof traveller._id === 'string' &&
+        'name' in traveller &&
+        typeof traveller.name === 'string' &&
+        'articlesAmount' in traveller &&
+        typeof traveller.articlesAmount === 'number',
+    )
+  ) {
+    throw new Error('Сервер повернув некоректний список мандрівників');
   }
 
   return travellers;

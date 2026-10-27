@@ -74,12 +74,11 @@ async function getStories(limit: 8 | 9, category?: string): Promise<Story[]> {
   }
 
   const payload: unknown = await response.json();
-  const stories = Array.isArray(payload)
-    ? payload
-    : typeof payload === 'object' &&
-        payload !== null &&
-        'stories' in payload &&
-        Array.isArray(payload.stories)
+  const stories =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'stories' in payload &&
+    Array.isArray(payload.stories)
       ? payload.stories
       : null;
 

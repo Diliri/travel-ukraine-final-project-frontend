@@ -41,22 +41,19 @@ export async function GET(request: NextRequest) {
     return new Response(response.body, {
       status: response.status,
       headers: {
-        'Content-Type':
-          response.headers.get('Content-Type') ?? 'application/json',
+        'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
       },
     });
   }
 
   const payload: unknown = await response.json();
   const stories =
-    Array.isArray(payload)
-      ? payload
-      : typeof payload === 'object' &&
-          payload !== null &&
-          'stories' in payload &&
-          Array.isArray(payload.stories)
-        ? payload.stories
-        : null;
+    typeof payload === 'object' &&
+    payload !== null &&
+    'stories' in payload &&
+    Array.isArray(payload.stories)
+      ? payload.stories
+      : null;
 
   if (!stories) {
     return Response.json(

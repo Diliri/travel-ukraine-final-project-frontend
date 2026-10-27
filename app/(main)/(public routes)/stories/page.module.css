@@ -143,6 +143,30 @@
     color 0.5s ease,
     fill ease 0.5s;
 }
+
+.readMore_flag:disabled {
+  cursor: wait;
+}
+
+.readMore_flag[aria-busy='true'] svg {
+  display: none;
+}
+
+.favoriteSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: favorite-spin 700ms linear infinite;
+}
+
+@keyframes favorite-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .readMore_flag:hover,
 .readMore_flag:focus,
 .readMore:hover,
