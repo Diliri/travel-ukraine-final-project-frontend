@@ -1,7 +1,15 @@
 .pagination {
   display: flex;
   justify-content: center;
+  align-items: center;
+  min-height: 48px;
   margin-top: 40px;
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .button {

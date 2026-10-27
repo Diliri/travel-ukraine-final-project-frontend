@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import styles from './Pagination.module.css';
 
 type PaginationProps = {
@@ -7,6 +8,7 @@ type PaginationProps = {
   isLoading: boolean;
   onLoadMore: () => void;
   controls?: string;
+  hasError?: boolean;
 };
 
 export default function Pagination({
@@ -14,12 +16,34 @@ export default function Pagination({
   isLoading,
   onLoadMore,
   controls,
+  hasError = false,
 }: PaginationProps) {
+  const sentinel = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = sentinel.current;
+    if (!element || !hasMore || isLoading || hasError) return;
+
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        observer.disconnect();
+        onLoadMore();
+      }
+    }, { rootMargin: '200px 0px' });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, hasError, onLoadMore]);
+
   if (!hasMore && !isLoading) return null;
 
   return (
-    <div className={styles.pagination}>
-      <button
+    <div ref={sentinel} className={styles.pagination} aria-busy={isLoading}>
+      {isLoading && <span role="status" className={styles.loading}>
+        <span className={styles.spinner} aria-hidden="true" />
+        Завантаження історій…
+      </span>}
+      {hasError && <button
         type="button"
         className={styles.button}
         onClick={onLoadMore}
@@ -27,9 +51,8 @@ export default function Pagination({
         aria-busy={isLoading}
         aria-controls={controls}
       >
-        {isLoading && <span className={styles.spinner} aria-hidden="true" />}
-        {isLoading ? 'Завантаження…' : 'Показати ще'}
-      </button>
+        Спробувати ще раз
+      </button>}
     </div>
   );
 }

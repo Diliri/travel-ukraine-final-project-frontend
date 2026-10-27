@@ -50,9 +50,9 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
   const hasMore = mode === 'all' && Boolean(pagination?.hasNextPage);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paginationError, setPaginationError] = useState(false);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const loadingRef = useRef(false);
-  const pendingScrollId = useRef<string | null>(null);
 
   useEffect(() => {
     if (mode === 'recommendations') return;
@@ -96,6 +96,7 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
     loadingRef.current = true;
     setIsLoading(true);
     setError(null);
+    setPaginationError(false);
 
     try {
       const nextPage = page + 1;
@@ -103,7 +104,6 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
       const data = result.stories;
 
       if (data.length > 0) {
-        pendingScrollId.current = data[0]._id;
         setStories(currentStories => {
           const existingIds = new Set(currentStories.map(story => story._id));
           return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
@@ -111,6 +111,7 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
       }
       setPagination(result.pagination);
     } catch (requestError) {
+      setPaginationError(true);
       setError(
         requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
       );
@@ -128,10 +129,10 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
     setError(null);
     try {
       const result = await fetchStoriesPage(1, limit, category);
-      pendingScrollId.current = null;
       setStories(result.stories);
       setSelectedCategory(category);
       setPagination(result.pagination);
+      setPaginationError(false);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії');
     } finally {
@@ -140,19 +141,6 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
       setIsFiltering(false);
     }
   };
-
-  useEffect(() => {
-    const storyId = pendingScrollId.current;
-    if (!storyId) {
-      return;
-    }
-
-    pendingScrollId.current = null;
-    document.getElementById(`story-${storyId}`)?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-      block: 'start',
-    });
-  }, [stories]);
 
   const toggleFavorite = async (storyId: string) => {
     const shouldAdd = !favoriteStoryIds[storyId];
@@ -331,7 +319,8 @@ export default function StoriesList({ initialStories, initialPagination, pageSiz
       {mode === 'all' && !isFiltering && <Pagination
         hasMore={hasMore}
         isLoading={isLoading}
-        onLoadMore={() => void loadNextPage()}
+        onLoadMore={loadNextPage}
+        hasError={paginationError}
         controls="stories-list"
       />}
       <span className="visually-hidden" role="status">
