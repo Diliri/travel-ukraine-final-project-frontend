@@ -7,7 +7,7 @@
 .hero {
     width: 100%;
     padding: 64px 20px;
-    background-color: #eef8ee;
+    background-color: var(--color-scheme-2-background);
 }
 
 .container {
@@ -70,7 +70,7 @@
     line-height: 1.1;
     letter-spacing: -0.01em;
 
-    color: rgb(27, 57, 27);
+    color: var(--color-scheme-2-text);
 }
 
 /* =========================================
@@ -87,7 +87,7 @@
     line-height: 1.5;
     letter-spacing: 0;
 
-    color: rgb(27, 57, 27);
+    color: var(--color-scheme-2-text);
 }
 
 /* =========================================
@@ -112,8 +112,8 @@
 
     padding: 6px 12px;
 
-    background-color: rgb(74, 152, 73);
-    border: 1px solid rgb(74, 152, 73);
+    background-color: var(--color-mantis-dark);
+    border: 1px solid var(--color-mantis-dark);
     border-radius: 4px;
 
     font-family: var(--font-family), sans-serif;
@@ -126,9 +126,11 @@
     text-decoration: none;
 }
 
-.button:hover {
-    background-color: rgb(58, 125, 57);
+
+button:hover {
+    background-color: var(--color-mantis-darker);
 }
+
 
 /* =========================================
    TABLET: 768px+
@@ -214,6 +216,6 @@
         min-width: 0;
         width: auto;
         height: 580px;
-        background-image: url("/images/herodesktop.jpg");
+        background-image: url("/images/herodesk.jpg");
     }
 }
