@@ -1,24 +1,10 @@
-import { Story } from './story';
-
 export type User = {
-  email: string;
+  _id: string;
   name: string;
-  password: string;
+  email: string;
   avatarUrl: string;
-  articlesAmount?: number;
-  savedArticlesAmount?: number;
-  savedArticles?: string[];
-  createAt: Date;
-  updateAt: Date;
-};
-
-export type PublicTravellerProfileResponse = {
-  user: User;
-  stories: {
-    data: Story[];
-    page: number;
-    perPage: number;
-    totalItems: number;
-    totalPages: number;
-  };
+  articlesAmount: number;
+  savedArticles: string[];
+  createdAt?: string;
+  updatedAt?: string;
 };

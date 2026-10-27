@@ -1,86 +1,49 @@
 'use client';
 
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { IoMdClose } from 'react-icons/io';
-import { PageTitle } from '@/components/PageTitle/PageTitle';
-import css from './ErrorWhileSavingModal.module.css';
+import { useEffect } from 'react';
+import styles from './ErrorWhileSavingModal.module.css';
 
-interface ErrorWhileSavingModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-  }
+type ErrorWhileSavingModalProps = {
+  onClose: () => void;
+};
 
-  export default function ErrorWhileSavingModal({
-    isOpen,
-    onClose,
-  }: ErrorWhileSavingModalProps) {
-    useEffect(() => {
-      if (!isOpen) return;
-  
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') onClose();
-      };
-  
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-  
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.style.overflow = '';
-      };
-    }, [isOpen, onClose]);
-  
-    const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
-      if (event.target === event.currentTarget) {
+export default function ErrorWhileSavingModal({ onClose }: ErrorWhileSavingModalProps) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
-  
-    if (!isOpen) return null;
-  
-    return createPortal(
-      <div
-        className={css.backdrop}
-        onClick={handleBackdropClick}
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <section
+        className={styles.modal}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="saving-modal-title"
+        onClick={event => event.stopPropagation()}
       >
-        <div className={css.modal}>
-          <button
-            type="button"
-            className={css.closeButton}
-            onClick={onClose}
-            aria-label="Закрити"
-          >
-            <IoMdClose size={24} />
-          </button>
-  
-          <PageTitle
-            variant="modal"
-            align="center"
-            color="scheme1"
-            marginBottom={16}
-          >
-            Помилка під час збереження
-          </PageTitle>
-  
-          <p className={css.description}>
-            Щоб зберегти статтю вам треба увійти, якщо ще немає облікового
-            запису зареєструйтесь
-          </p>
-  
-          <div className={css.buttonGroup}>
-            <Link href="/login" className={css.loginBtn} onClick={onClose}>
-              Увійти
-            </Link>
-            <Link href="/register" className={css.registerBtn} onClick={onClose}>
-              Зареєструватись
-            </Link>
-          </div>
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={onClose}
+          aria-label="Закрити вікно"
+        >
+          ×
+        </button>
+        <h2 id="saving-modal-title">Увійдіть, щоб зберегти статтю</h2>
+        <p>Збережені статті будуть доступні у вашому профілі.</p>
+        <div className={styles.actions}>
+          <Link href="/login">Увійти</Link>
+          <Link href="/register">Зареєструватися</Link>
         </div>
-      </div>,
-      document.body
-    );
-  }
+      </section>
+    </div>
+  );
+}
