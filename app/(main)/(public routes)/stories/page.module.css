@@ -52,6 +52,28 @@
   font-weight: 700;
 }
 
+.storiesContent {
+  animation: category-content-enter 240ms ease-out both;
+}
+
+@keyframes category-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storiesContent {
+    animation: none;
+  }
+}
+
 .card {
   height: 100%;
   overflow: hidden;

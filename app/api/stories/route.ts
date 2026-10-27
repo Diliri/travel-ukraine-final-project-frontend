@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   const limit = request.nextUrl.searchParams.get('limit') ?? '9';
   const page = request.nextUrl.searchParams.get('page') ?? '1';
+  const category = request.nextUrl.searchParams.get('category');
 
   if (!['8', '9'].includes(limit)) {
     return Response.json({ message: 'limit must be 8 or 9' }, { status: 400 });
@@ -31,6 +32,9 @@ export async function GET(request: NextRequest) {
 
   storiesUrl.searchParams.set('perPage', limit);
   storiesUrl.searchParams.set('page', page);
+  if (category) {
+    storiesUrl.searchParams.set('category', category);
+  }
   const response = await fetch(storiesUrl, { cache: 'no-store' });
 
   if (!response.ok) {
