@@ -5,23 +5,12 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination/Pagination';
+import { parseStoriesResponse, type Story, type PaginationMeta, type StoriesResponse } from '@/lib/api/storiesResponse';
 import styles from './page.module.css';
-
-export type Story = {
-  _id: string;
-  ownerId?: { name: string } | string | null;
-  img: string;
-  title: string;
-  desc?: string;
-  article?: string;
-  author?: string;
-  date?: string;
-  rate: number;
-};
 
 type StoriesListProps = {
   initialStories: Story[];
-  initialNextStories?: Story[];
+  initialPagination?: PaginationMeta;
   pageSize?: 8 | 9;
   mode?: 'all' | 'recommendations';
 };
@@ -29,25 +18,6 @@ type Category = {
   _id: string;
   category: string;
 };
-
-function isStory(value: unknown): value is Story {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_id' in value &&
-    typeof value._id === 'string' &&
-    'img' in value &&
-    typeof value.img === 'string' &&
-    'title' in value &&
-    typeof value.title === 'string' &&
-    'rate' in value &&
-    typeof value.rate === 'number' &&
-    (!('desc' in value) || typeof value.desc === 'string') &&
-    (!('article' in value) || typeof value.article === 'string') &&
-    (!('author' in value) || typeof value.author === 'string') &&
-    (!('date' in value) || typeof value.date === 'string')
-  );
-}
 
 function isCategory(value: unknown): value is Category {
   return (
@@ -60,34 +30,28 @@ function isCategory(value: unknown): value is Category {
   );
 }
 
-async function fetchStoriesPage(page: number, limit: number, category: string): Promise<Story[]> {
+async function fetchStoriesPage(page: number, limit: number, category: string): Promise<StoriesResponse> {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (category) params.set('category', category);
   const response = await fetch(`/api/stories?${params}`);
   if (!response.ok) throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-  const data: unknown = await response.json();
-  if (!Array.isArray(data) || !data.every(isStory)) {
-    throw new Error('Сервер повернув некоректний список історій');
-  }
-  return data;
+  return parseStoriesResponse(await response.json());
 }
 
-export default function StoriesList({ initialStories, initialNextStories, pageSize = 9, mode = 'all' }: StoriesListProps) {
+export default function StoriesList({ initialStories, initialPagination, pageSize = 9, mode = 'all' }: StoriesListProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isFiltering, setIsFiltering] = useState(false);
   const [stories, setStories] = useState(initialStories);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
-  const limit = pageSize;
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(
-    initialNextStories ? initialNextStories.length > 0 : initialStories.length === pageSize
-  );
+  const [pagination, setPagination] = useState(initialPagination);
+  const limit = pagination?.perPage ?? pageSize;
+  const page = pagination?.page ?? 1;
+  const hasMore = mode === 'all' && Boolean(pagination?.hasNextPage);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const loadingRef = useRef(false);
-  const nextStoriesRef = useRef(initialNextStories);
   const pendingScrollId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -135,11 +99,8 @@ export default function StoriesList({ initialStories, initialNextStories, pageSi
 
     try {
       const nextPage = page + 1;
-      const data = nextStoriesRef.current ?? await fetchStoriesPage(nextPage, limit, selectedCategory);
-      // API повертає масив без загальної кількості історій.
-      const followingPage = data.length === limit
-        ? await fetchStoriesPage(nextPage + 1, limit, selectedCategory)
-        : [];
+      const result = await fetchStoriesPage(nextPage, limit, selectedCategory);
+      const data = result.stories;
 
       if (data.length > 0) {
         pendingScrollId.current = data[0]._id;
@@ -147,10 +108,8 @@ export default function StoriesList({ initialStories, initialNextStories, pageSi
           const existingIds = new Set(currentStories.map(story => story._id));
           return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
         });
-        setPage(nextPage);
       }
-      nextStoriesRef.current = followingPage;
-      setHasMore(followingPage.length > 0);
+      setPagination(result.pagination);
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
@@ -168,16 +127,11 @@ export default function StoriesList({ initialStories, initialNextStories, pageSi
     setIsFiltering(true);
     setError(null);
     try {
-      const data = await fetchStoriesPage(1, limit, category);
-      const followingPage = data.length === limit
-        ? await fetchStoriesPage(2, limit, category)
-        : [];
+      const result = await fetchStoriesPage(1, limit, category);
       pendingScrollId.current = null;
-      nextStoriesRef.current = followingPage;
-      setStories(data);
+      setStories(result.stories);
       setSelectedCategory(category);
-      setPage(1);
-      setHasMore(followingPage.length > 0);
+      setPagination(result.pagination);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії');
     } finally {
@@ -204,7 +158,7 @@ export default function StoriesList({ initialStories, initialNextStories, pageSi
     const shouldAdd = !favoriteStoryIds[storyId];
 
     try {
-      const response = await fetch(`/api/stories/${storyId}/favorite`, {
+      const response = await fetch(`/api/users/saved-stories/${storyId}`, {
         method: shouldAdd ? 'POST' : 'DELETE',
         credentials: 'include',
         headers: {
@@ -252,21 +206,21 @@ export default function StoriesList({ initialStories, initialNextStories, pageSi
               >
                 <option value="">Всі статті</option>
                 {categories.map(category => (
-                  <option key={category._id} value={category.category}>{category.category}</option>
+                  <option key={category._id} value={category._id}>{category.category}</option>
                 ))}
               </select>
             </label>
             <ul className={styles.categories} aria-label="Категорії статей">
-              {[{ _id: 'all', category: '' }, ...categories].map(category => (
-                <li key={category._id}>
+              {[{ _id: '', category: 'Всі статті' }, ...categories].map(category => (
+                <li key={category._id || 'all'}>
                   <button
                     type="button"
-                    className={selectedCategory === category.category ? styles.active : undefined}
-                    aria-pressed={selectedCategory === category.category}
+                    className={selectedCategory === category._id ? styles.active : undefined}
+                    aria-pressed={selectedCategory === category._id}
                     disabled={isLoading}
-                    onClick={() => void changeCategory(category.category)}
+                    onClick={() => void changeCategory(category._id)}
                   >
-                    {category.category || 'Всі статті'}
+                    {category.category}
                   </button>
                 </li>
               ))}

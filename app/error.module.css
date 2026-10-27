@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+
+  background-color: var(--color-scheme-1-background);
+}
+
+.card {
+  background-color: var(--color-white);
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.button {
+  padding: 6px 12px;
+  height: 44px;
+  border: 1px solid var(--color-scheme-1-border);
+  border-radius: 8px;
+
+  background: var(--color-royal-blue);
+  color: var(--color-white);
+
+  transition: 
+    color 300ms ease-in-out,
+    background-color 300ms ease-in-out;
+}
+
+.button:hover,
+.button:focus {
+  color: var(--color-scheme-2-text);
+  background-color: var(--color-scheme-2-background);
+}
+
+.button:active {
+  background-color: var(--color-mantis-lighter);
+}

@@ -35,7 +35,7 @@ export default function SaveStory({ storyId }: { storyId: string }) {
     pending.current = true;
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/stories/${storyId}/favorite`, {
+      const response = await fetch(`/api/users/saved-stories/${storyId}`, {
         method: saved ? 'DELETE' : 'POST', credentials: 'include',
       });
       if (response.status === 401) {

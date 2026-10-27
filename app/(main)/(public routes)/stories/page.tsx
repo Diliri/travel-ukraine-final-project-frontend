@@ -1,39 +1,11 @@
 import styles from './page.module.css';
 import StoriesList from './StoriesList';
 
-type Story = {
-  _id: string;
-  img: string;
-  title: string;
-  desc?: string;
-  article?: string;
-  author?: string;
-  date?: string;
-  rate: number;
-};
+import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
 
 export const dynamic = 'force-dynamic';
 
-function isStory(value: unknown): value is Story {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_id' in value &&
-    typeof value._id === 'string' &&
-    'img' in value &&
-    typeof value.img === 'string' &&
-    'title' in value &&
-    typeof value.title === 'string' &&
-    'rate' in value &&
-    typeof value.rate === 'number' &&
-    (!('desc' in value) || typeof value.desc === 'string') &&
-    (!('article' in value) || typeof value.article === 'string') &&
-    (!('author' in value) || typeof value.author === 'string') &&
-    (!('date' in value) || typeof value.date === 'string')
-  );
-}
-
-async function getStories(limit: 8 | 9, page = 1): Promise<Story[]> {
+async function getStories(limit: 8 | 9, page = 1): Promise<StoriesResponse> {
   const configuredBackendUrl =
     process.env.BACKEND_URL?.trim() || 'http://localhost:3000';
   const backendUrl = /^[a-z][a-z\d+.-]*:\/\//i.test(configuredBackendUrl)
@@ -56,26 +28,16 @@ async function getStories(limit: 8 | 9, page = 1): Promise<Story[]> {
     throw new Error(`Не вдалося завантажити історії: ${response.status}`);
   }
 
-  const stories: unknown = await response.json();
-  if (!Array.isArray(stories) || !stories.every(isStory)) {
-    throw new Error('Сервер повернув некоректний список історій');
-  }
-
-  return stories;
+  return parseStoriesResponse(await response.json());
 }
 
 export default async function StoriesPage() {
-  let stories: Story[] = [];
-  let loadFailed = false;
-
+  let result: StoriesResponse | null = null;
   try {
-    stories = await getStories(9);
+    result = await getStories(9);
   } catch {
-    loadFailed = true;
+    result = null;
   }
-  const nextStories = stories.length === 9
-    ? await getStories(9, 2).catch(() => undefined)
-    : [];
 
   return (
     <section className={styles.page} aria-labelledby="stories-title">
@@ -83,7 +45,7 @@ export default async function StoriesPage() {
         <h1 id="stories-title">Статті</h1>
       </header>
 
-      {loadFailed ? (
+      {!result ? (
         <div className={styles.status} role="alert">
           <p>Не вдалося завантажити історії. Спробуйте ще раз трохи пізніше.</p>
           <form action="/stories" method="get">
@@ -91,7 +53,7 @@ export default async function StoriesPage() {
           </form>
         </div>
       ) : (
-        <StoriesList initialStories={stories} initialNextStories={nextStories} />
+        <StoriesList initialStories={result.stories} initialPagination={result.pagination} />
       )}
     </section>
   );

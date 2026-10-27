@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import AuthForm from "@/components/AuthForm/AuthForm";
+import LoginForm from "@/components/LoginForm/LoginForm";
 
 export const metadata: Metadata = {
   title: "Вхід | Природні Мандри",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <AuthForm type="login" />;
+  return <LoginForm />;
 }

@@ -4,8 +4,16 @@
   justify-content: flex-start;
   flex-direction: row;
   gap: 0;
-  width: 100%;
+  width: 335px;
   height: 49px;
+
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    width: 644px;
+  }
 }
 
 .tab {
