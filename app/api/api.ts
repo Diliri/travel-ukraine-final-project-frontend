@@ -7,12 +7,13 @@ import axios, {
 } from 'axios';
 import { cookies } from 'next/headers';
 
-// Визначаємо baseURL
-const baseURL = process.env.NEXT_PUBLIC_API_URL 
-  ? `${process.env.NEXT_PUBLIC_API_URL}/api` 
-  : (process.env.API_URL || 'http://localhost:3000');
-
-console.log('INIT api baseURL =', baseURL);
+const configuredApiUrl =
+  process.env.BACKEND_URL?.trim() ||
+  process.env.NEXT_PUBLIC_API_URL?.trim() ||
+  process.env.API_URL?.trim() ||
+  'http://localhost:3000';
+const apiRoot = configuredApiUrl.replace(/\/+$/, '').replace(/\/api$/i, '');
+const baseURL = `${apiRoot}/api`;
 
 export const api: AxiosInstance = axios.create({
   baseURL,
