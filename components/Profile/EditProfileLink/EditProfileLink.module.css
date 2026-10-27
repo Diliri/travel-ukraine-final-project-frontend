@@ -1,0 +1,18 @@
+.link {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 6px 12px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-scheme-2-text);
+  background-color: var(--opacity-neutral-darkest-5);
+  border: 1px solid var(--color-scheme-2-border);
+  border-radius: 6px;
+}
+
+.link:hover,
+.link:focus-visible {
+  border-color: var(--color-mantis-dark);
+  background-color: var(--opacity-neutral-darkest-15);
+}

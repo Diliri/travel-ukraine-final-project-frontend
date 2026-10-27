@@ -14,9 +14,18 @@ export type RegisterRequest = {
   password: string;
 };
 
+export type RegisterRequest = RegisterPayload;
+
 export type RegisterResponse = {
   user: User;
 };
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type LoginRequest = LoginPayload;
 
 export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
   const res = await nextServer.post<RegisterResponse>('/auth/register', data);

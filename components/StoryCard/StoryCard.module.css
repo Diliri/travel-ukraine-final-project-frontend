@@ -1,0 +1,173 @@
+.card {
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  color: rgba(27, 57, 27, 1);
+  background-color: #e0f2de;
+}
+
+.imageLink {
+  display: block;
+  height: 421px;
+  overflow: hidden;
+  background: #f1f1f1;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content {
+  padding: 12px;
+  font-weight: 600;
+}
+
+.meta,
+.footer {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.meta {
+  margin-bottom: 12px;
+}
+
+.footer {
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.readMore {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.5s ease;
+}
+
+.saveButton {
+  display: flex;
+  min-width: 48px;
+  min-height: 48px;
+  margin-left: 16px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease,
+    fill 0.5s ease;
+}
+
+.saveButton:hover,
+.saveButton:focus-visible,
+.readMore:hover,
+.readMore:focus-visible {
+  background-color: #4a9849;
+  color: #fff;
+  fill: #fff;
+}
+
+.saveButton:active,
+.readMore:active {
+  background-color: #254c24;
+}
+
+.saveButton:disabled {
+  cursor: wait;
+}
+
+.saveButton[aria-busy='true'] svg {
+  display: none;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dot {
+  margin: 3px 8px;
+}
+
+.rate {
+  display: flex;
+  font-weight: 400;
+}
+
+.smallFlag {
+  margin-left: 6px;
+  align-self: center;
+}
+
+@media (min-width: 375px) {
+  .content {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  .meta,
+  .footer {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .title {
+    font-size: 26px;
+    line-height: 1.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.5s;
+  }
+}
