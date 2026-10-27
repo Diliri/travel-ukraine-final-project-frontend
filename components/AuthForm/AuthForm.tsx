@@ -149,11 +149,12 @@ export default function AuthForm({ type }: AuthFormProps) {
           validateOnChange={false}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const { user } = await register({
+              const result = await register({
                 name: values.name.trim(),
                 email: values.email.trim(),
                 password: values.password,
               });
+              const user = "user" in result ? result.user : result;
 
               setUser(user);
               toast.success("Реєстрація успішна");
