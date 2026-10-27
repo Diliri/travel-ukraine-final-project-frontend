@@ -6,17 +6,11 @@ import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 import toast from "react-hot-toast";
 
-import { register } from "@/lib/api/clientApi";
+import { register, RegisterRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
 import { registerSchema } from "@/lib/validation/authValidation";
 import css from "./AuthForm.module.css";
-
-type RegisterValues = {
-  name: string;
-  email: string;
-  password: string;
-};
 
 
 function getErrorMessage(error: unknown) {
@@ -111,7 +105,7 @@ export default function AuthForm() {
   const subtitle = "Раді вас бачити у спільноті мандрівників!";
   const submitLabel = "Зареєструватись";
 
-  const initialValues: RegisterValues = {
+  const initialValues: RegisterRequest = {
       name: "",
       email: "",
       password: "",

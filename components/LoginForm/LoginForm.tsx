@@ -14,15 +14,10 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 
-import { login } from "@/lib/api/clientApi";
+import { login, LoginRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import { loginSchema } from "@/lib/validation/authValidation";
 import { CURRENT_USER_KEY } from "@/hooks/useCurrentUser";
-
-type LoginValues = {
-  email: string;
-  password: string;
-};
 
 type PasswordFieldProps = {
   id: string;
@@ -31,7 +26,7 @@ type PasswordFieldProps = {
 };
 
 
-const initialLoginValues: LoginValues = {
+const initialLoginValues: LoginRequest = {
   email: "",
   password: "",
 };
@@ -101,7 +96,7 @@ const LoginForm = () => {
 
 
   const handleSubmit = async (
-    values: LoginValues,
+    values: LoginRequest,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
     try {
@@ -113,8 +108,7 @@ const LoginForm = () => {
       setUser(res);
       queryClient.setQueryData(CURRENT_USER_KEY, res);
       toast.success("Вхід успішний");
-      router.replace("/profile");
-      router.refresh();
+      router.push("/profile");
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
