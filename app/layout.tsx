@@ -6,7 +6,7 @@ import "./globals.css";
 
 import QueryProvider from './providers/QueryProvider';
 import ToastProvider from '@/components/ToastProvider/ToastProvider';
-// import AuthNavModal from '@/components/AuthNavModal/AuthNavModal';
+//import AuthNavModal from '@/components/AuthNavModal/AuthNavModal';
 // import { Providers } from './providers/ThemeProvider';
 // import Header from "@/components/Header/Header";
 
@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl!),
+  metadataBase: new URL(baseUrl || "http://localhost:3000"),
   title: { default: 'Подорожуй Україною', template: '%s | Подорожі Україною' },
   description:
     'Платформа для мандрівників Україною: переглядай історії інших та ділися своїми.',
