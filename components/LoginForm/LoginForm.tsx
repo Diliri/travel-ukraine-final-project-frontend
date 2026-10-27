@@ -11,11 +11,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Form, Formik, Field, ErrorMessage } from "formik";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 import { login } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import { loginSchema } from "@/lib/validation/authValidation";
+import { CURRENT_USER_KEY } from "@/hooks/useCurrentUser";
 
 type LoginValues = {
   email: string;
@@ -94,6 +96,7 @@ function PasswordField({ id, autoComplete, hasError }: PasswordFieldProps) {
 
 const LoginForm = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const setUser = useAuthStore((state) => state.setUser);
 
 
@@ -108,8 +111,10 @@ const LoginForm = () => {
       });
 
       setUser(res);
+      queryClient.setQueryData(CURRENT_USER_KEY, res);
       toast.success("Вхід успішний");
-      router.push("/profile");
+      router.replace("/profile");
+      router.refresh();
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -160,6 +165,7 @@ const LoginForm = () => {
             <button
               type="submit"
               className={css.button}
+              disabled={isSubmitting}
             >
               {isSubmitting ? "Входжу…" : "Увійти"}
             </button>

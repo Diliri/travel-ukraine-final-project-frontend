@@ -428,6 +428,7 @@ export default function StoriesList({
       {!hasMore && stories.length > 0 && (
         <p className={styles.status}>Ви переглянули всі історії.</p>
       )}
+      </div>
       {isSavingModalOpen && (
         <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />
       )}
