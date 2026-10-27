@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './page.module.css';
 
@@ -18,13 +17,30 @@ type Story = {
   rate: number;
 };
 
-type StoriesListProps = {
-  initialStories: Story[];
-};
 type Category = {
   _id: string;
   category: string;
 };
+
+type StoriesListProps = {
+  initialStories: Story[];
+  initialCategory?: string;
+  initialCategories: Category[];
+  categoriesError: string | null;
+};
+
+function getStoriesUrl(limit: 8 | 9, page: number, category?: string) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    page: String(page),
+  });
+
+  if (category) {
+    params.set('category', category);
+  }
+
+  return `/api/stories?${params.toString()}`;
+}
 
 function isStory(value: unknown): value is Story {
   return (
@@ -45,22 +61,14 @@ function isStory(value: unknown): value is Story {
   );
 }
 
-function isCategory(value: unknown): value is Category {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_id' in value &&
-    typeof value._id === 'string' &&
-    'category' in value &&
-    typeof value.category === 'string'
-  );
-}
-
-export default function StoriesList({ initialStories }: StoriesListProps) {
-  const pathname = usePathname();
+export default function StoriesList({
+  initialStories,
+  initialCategory,
+  initialCategories,
+  categoriesError,
+}: StoriesListProps) {
   const [stories, setStories] = useState(initialStories);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const categories = initialCategories;
   const [limit, setLimit] = useState<8 | 9>(9);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialStories.length === 9);
@@ -70,39 +78,6 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
   const loadingRef = useRef(false);
   const endRef = useRef<HTMLDivElement>(null);
   const pendingScrollId = useRef<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const loadCategories = async () => {
-      try {
-        const response = await fetch('/api/categories', {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`Не вдалося завантажити категорії: ${response.status}`);
-        }
-
-        const data: unknown = await response.json();
-        if (!Array.isArray(data) || !data.every(isCategory)) {
-          throw new Error('Сервер повернув некоректний список категорій');
-        }
-
-        setCategories(data);
-      } catch (requestError) {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setCategoriesError(
-          requestError instanceof Error ? requestError.message : 'Не вдалося завантажити категорії'
-        );
-      }
-    };
-
-    void loadCategories();
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 1440px)');
@@ -116,7 +91,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       setIsLoading(true);
 
       try {
-        const response = await fetch(`/api/stories?limit=${nextLimit}&page=1`);
+        const response = await fetch(getStoriesUrl(nextLimit, 1, initialCategory));
         if (!response.ok) {
           throw new Error(`Не вдалося завантажити історії: ${response.status}`);
         }
@@ -151,7 +126,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
     desktop.addEventListener('change', handleChange);
 
     return () => desktop.removeEventListener('change', handleChange);
-  }, [limit]);
+  }, [limit, initialCategory]);
 
   const loadNextPage = useCallback(async () => {
     if (loadingRef.current || !hasMore) {
@@ -164,7 +139,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
 
     try {
       const nextPage = page + 1;
-      const response = await fetch(`/api/stories?limit=${limit}&page=${nextPage}`);
+      const response = await fetch(getStoriesUrl(limit, nextPage, initialCategory));
       if (!response.ok) {
         throw new Error(`Не вдалося завантажити історії: ${response.status}`);
       }
@@ -188,7 +163,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       loadingRef.current = false;
       setIsLoading(false);
     }
-  }, [hasMore, limit, page]);
+  }, [hasMore, limit, page, initialCategory]);
 
   useEffect(() => {
     const endElement = endRef.current;
@@ -235,9 +210,7 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { message?: string }
-          | null;
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null;
         throw new Error(payload?.message || 'Не вдалося оновити список улюблених');
       }
 
@@ -247,41 +220,45 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       }));
     } catch (requestError) {
       setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Не вдалося оновити список улюблених',
+        requestError instanceof Error ? requestError.message : 'Не вдалося оновити список улюблених'
       );
     }
   };
 
-  if (stories.length === 0 && !error) {
-    return <p className={styles.empty}>Історій поки немає.</p>;
-  }
-
   return (
     <>
-      {categoriesError ? (
-        <p role="alert">{categoriesError}</p>
-      ) : (
-        categories.length > 0 && (
-          <ul className={styles.categories} aria-label="Категорії статей">
-            <li
-              className={pathname === '/stories' ? styles.active : undefined}
-              aria-current={pathname === '/stories' ? 'page' : undefined}
-            >
+      {categoriesError && <p role="alert">{categoriesError}</p>}
+      {!categoriesError && categories.length > 0 && (
+        <ul className={styles.categories} aria-label="Категорії статей">
+          <li className={!initialCategory ? styles.active : undefined}>
+            <Link href="/stories" aria-current={!initialCategory ? 'page' : undefined}>
               Усі категорії
-            </li>
-            {categories.map(category => (
-              <li key={category._id}>{category.category}</li>
-            ))}
-          </ul>
-        )
+            </Link>
+          </li>
+
+          {categories.map(category => {
+            const isActive = initialCategory === category._id;
+
+            return (
+              <li key={category._id} className={isActive ? styles.active : undefined}>
+                <Link
+                  href={`/stories?category=${encodeURIComponent(category._id)}`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {category.category}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       )}
-      {stories.length > 0 && (
-        <ul className={styles.list} data-limit={limit}>
-          {stories.map(story => (
-            <li className={styles.item} id={`story-${story._id}`} key={story._id}>
-              <article className={styles.card}>
+      <div className={styles.storiesContent}>
+        {stories.length === 0 && !error && <p className={styles.empty}>Історій поки немає.</p>}
+        {stories.length > 0 && (
+          <ul className={styles.list} data-limit={limit}>
+            {stories.map(story => (
+              <li className={styles.item} id={`story-${story._id}`} key={story._id}>
+                <article className={styles.card}>
                 <Link
                   className={styles.imageLink}
                   href={`/stories/${story._id}`}
@@ -368,24 +345,25 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
                     </button>
                   </div>
                 </div>
-              </article>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div ref={endRef} aria-hidden="true" />
-      {isLoading && <p className={styles.status}>Завантаження історій…</p>}
-      {error && (
-        <div className={styles.status} role="alert">
-          <p>{error}</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            Оновити сторінку
-          </button>
-        </div>
-      )}
-      {!hasMore && stories.length > 0 && (
-        <p className={styles.status}>Ви переглянули всі історії.</p>
-      )}
+                </article>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div ref={endRef} aria-hidden="true" />
+        {isLoading && <p className={styles.status}>Завантаження історій…</p>}
+        {error && (
+          <div className={styles.status} role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={() => window.location.reload()}>
+              Оновити сторінку
+            </button>
+          </div>
+        )}
+        {!hasMore && stories.length > 0 && (
+          <p className={styles.status}>Ви переглянули всі історії.</p>
+        )}
+      </div>
     </>
   );
 }
