@@ -1,16 +1,7 @@
 import styles from './page.module.css';
 import StoriesList from './StoriesList';
 
-type Story = {
-  _id: string;
-  img: string;
-  title: string;
-  desc?: string;
-  article?: string;
-  author?: string;
-  date?: string;
-  rate: number;
-};
+import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
 
 type Category = {
   _id: string;
@@ -67,6 +58,7 @@ async function getStories(limit: 8 | 9, category?: string): Promise<Story[]> {
 
   const response = await fetch(storiesUrl, {
     cache: 'no-store',
+    signal: AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {
@@ -136,9 +128,9 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
   ]);
 
   return (
-    <main className={styles.page}>
+    <section className={styles.page} aria-labelledby="stories-title">
       <header className={styles.header}>
-        <h1>Статті</h1>
+        <h1 id="stories-title">Статті</h1>
       </header>
 
       <StoriesList

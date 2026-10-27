@@ -72,13 +72,12 @@ export default function StoriesList({
   const [hasMore, setHasMore] = useState(initialStories.length === 9);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paginationError, setPaginationError] = useState(false);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
   const [isSavingModalOpen, setIsSavingModalOpen] = useState(false);
   const { data: currentUser, refetch: refetchCurrentUser } = useCurrentUser();
   const loadingRef = useRef(false);
-  const endRef = useRef<HTMLDivElement>(null);
-  const pendingScrollId = useRef<string | null>(null);
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 1440px)');
@@ -137,6 +136,7 @@ export default function StoriesList({
     loadingRef.current = true;
     setIsLoading(true);
     setError(null);
+    setPaginationError(false);
 
     try {
       const nextPage = page + 1;
@@ -151,12 +151,14 @@ export default function StoriesList({
       }
 
       if (data.length > 0) {
-        pendingScrollId.current = data[0]._id;
-        setStories(currentStories => [...currentStories, ...data]);
-        setPage(nextPage);
+        setStories(currentStories => {
+          const existingIds = new Set(currentStories.map(story => story._id));
+          return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
+        });
       }
-      setHasMore(data.length === limit);
+      setPagination(result.pagination);
     } catch (requestError) {
+      setPaginationError(true);
       setError(
         requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
       );
@@ -166,37 +168,26 @@ export default function StoriesList({
     }
   }, [hasMore, limit, page, initialCategory]);
 
-  useEffect(() => {
-    const endElement = endRef.current;
-    if (!endElement || !hasMore || error) {
-      return;
+  const changeCategory = async (category: string) => {
+    if (loadingRef.current || category === selectedCategory) return;
+    loadingRef.current = true;
+    setIsLoading(true);
+    setIsFiltering(true);
+    setError(null);
+    try {
+      const result = await fetchStoriesPage(1, limit, category);
+      setStories(result.stories);
+      setSelectedCategory(category);
+      setPagination(result.pagination);
+      setPaginationError(false);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії');
+    } finally {
+      loadingRef.current = false;
+      setIsLoading(false);
+      setIsFiltering(false);
     }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          void loadNextPage();
-        }
-      },
-      { rootMargin: '10px' }
-    );
-
-    observer.observe(endElement);
-    return () => observer.disconnect();
-  }, [error, hasMore, loadNextPage]);
-
-  useEffect(() => {
-    const storyId = pendingScrollId.current;
-    if (!storyId) {
-      return;
-    }
-
-    pendingScrollId.current = null;
-    document.getElementById(`story-${storyId}`)?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }, [stories]);
+  };
 
   const toggleFavorite = async (storyId: string) => {
     if (savingStoryId) return;
