@@ -66,6 +66,13 @@ export type CreateStoryData = {
   img?: File | string | null;
 };
 
+export type CreateStoryFormValues = {
+  image: File | null;
+  title: string;
+  category: string;
+  article: string;
+};
+
 export interface UpdateStoryData {
   title?: string;
   article?: string;
