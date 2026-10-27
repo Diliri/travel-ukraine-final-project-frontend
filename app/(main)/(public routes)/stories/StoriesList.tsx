@@ -1,24 +1,18 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import ErrorWhileSavingModal from '@/components/ErrorWhileSavingModal/ErrorWhileSavingModal';
+import StoryCard, { type StoryCardData } from '@/components/StoryCard/StoryCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiError } from '@/lib/api/profileApi';
 import styles from './page.module.css';
 
-type Story = {
-  _id: string;
-  ownerId?: { name: string } | string;
-  img: string;
-  title: string;
+type Story = StoryCardData & {
   desc?: string;
   article?: string;
-  author?: string;
   date?: string;
-  rate: number;
 };
 
 type Category = {
@@ -314,103 +308,12 @@ export default function StoriesList({
           <ul className={styles.list} data-limit={limit}>
             {stories.map(story => (
               <li className={styles.item} id={`story-${story._id}`} key={story._id}>
-                <article className={styles.card}>
-                <Link
-                  className={styles.imageLink}
-                  href={`/stories/${story._id}`}
-                  aria-label={`Читати історію: ${story.title}`}
-                >
-                  <Image
-                    className={styles.image}
-                    src={story.img}
-                    alt={story.title}
-                    width="421"
-                    height="421"
-                    unoptimized
-                  />
-                </Link>
-                <div className={styles.content}>
-                  <p className={styles.meta}>
-                    <span>
-                      {typeof story.ownerId === 'object'
-                        ? story.ownerId.name
-                        : (story.author ?? 'Мандрівник')}{' '}
-                      <svg
-                        className={styles.dot}
-                        width="3"
-                        height="4"
-                        viewBox="0 0 3 4"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M1.50004 3.04001C1.23337 3.04001 0.980039 2.97334 0.740039 2.84001C0.513372 2.70668 0.333372 2.52668 0.200039 2.30001C0.0667058 2.07334 3.92199e-05 1.80668 3.92199e-05 1.50001C3.92199e-05 1.22001 0.0667058 0.966678 0.200039 0.740011C0.333372 0.513344 0.513372 0.333344 0.740039 0.20001C0.980039 0.0666771 1.23337 1.04904e-05 1.50004 1.04904e-05C1.76671 1.04904e-05 2.01337 0.0666771 2.24004 0.20001C2.46671 0.333344 2.64671 0.513344 2.78004 0.740011C2.92671 0.966678 3.00004 1.22001 3.00004 1.50001C3.00004 1.80668 2.92671 2.07334 2.78004 2.30001C2.64671 2.52668 2.46671 2.70668 2.24004 2.84001C2.01337 2.97334 1.76671 3.04001 1.50004 3.04001Z"
-                          fill="#1B391B"
-                        />
-                      </svg>{' '}
-                    </span>
-                    <span className={styles.rate}>
-                      {story.rate}
-                      <svg
-                        className={styles.small_flag}
-                        width="16"
-                        height="16"
-                        viewBox="0 0 10 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M4.76633 10.2987L1.58733 11.6587C1.20889 11.8218 0.849722 11.7912 0.509833 11.5668C0.169944 11.3425 0 11.0251 0 10.6145V1.1395C0 0.831722 0.112611 0.564888 0.337833 0.338999C0.562944 0.112999 0.828833 0 1.1355 0H8.39717C8.70494 0 8.97178 0.112999 9.19767 0.338999C9.42367 0.564888 9.53667 0.831722 9.53667 1.1395V10.6145C9.53667 11.0251 9.36606 11.3425 9.02483 11.5668C8.68361 11.7912 8.32378 11.8218 7.94533 11.6587L4.76633 10.2987ZM4.76633 9.08383L8.39717 10.6145V1.1395H1.1355V10.6145L4.76633 9.08383ZM4.76633 1.1395H1.1355H8.39717H4.76633Z"
-                          fill="black"
-                        />
-                      </svg>
-                    </span>
-                  </p>
-                  <h2 className={styles.title}>
-                    <Link href={`/stories/${story._id}`}>{story.title}</Link>
-                  </h2>
-
-                  <div className={styles.footer}>
-                    <Link className={styles.readMore} href={`/stories/${story._id}`}>
-                      Переглянути статтю
-                    </Link>
-                    <button
-                      type="button"
-                      className={styles.readMore_flag}
-                      disabled={savingStoryId === story._id}
-                      aria-busy={savingStoryId === story._id}
-                      aria-label={
-                        savingStoryId === story._id
-                          ? 'Збереження історії'
-                          : isStorySaved(story._id)
-                            ? 'Видалити зі збережених'
-                            : 'Додати до збережених'
-                      }
-                      onClick={() => void toggleFavorite(story._id)}
-                      style={{
-                        color: isStorySaved(story._id) ? '#fff' : undefined,
-                        backgroundColor: isStorySaved(story._id) ? '#4a9849' : undefined,
-                      }}
-                    >
-                      {savingStoryId === story._id && (
-                        <span className={styles.favoriteSpinner} aria-hidden="true" />
-                      )}
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 10 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M4.76633 10.2987L1.58733 11.6587C1.20889 11.8218 0.849722 11.7912 0.509833 11.5668C0.169944 11.3425 0 11.0251 0 10.6145V1.1395C0 0.831722 0.112611 0.564888 0.337833 0.338999C0.562944 0.112999 0.828833 0 1.1355 0H8.39717C8.70494 0 8.97178 0.112999 9.19767 0.338999C9.42367 0.564888 9.53667 0.831722 9.53667 1.1395V10.6145C9.53667 11.0251 9.36606 11.3425 9.02483 11.5668C8.68361 11.7912 8.32378 11.8218 7.94533 11.6587L4.76633 10.2987ZM4.76633 9.08383L8.39717 10.6145V1.1395H1.1355V10.6145L4.76633 9.08383ZM4.76633 1.1395H1.1355H8.39717H4.76633Z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </article>
+                <StoryCard
+                  story={story}
+                  isSaved={isStorySaved(story._id)}
+                  isSaving={savingStoryId === story._id}
+                  onToggleSaved={storyId => void toggleFavorite(storyId)}
+                />
             </li>
           ))}
         </ul>
