@@ -1,0 +1,67 @@
+.profileStoriesEmptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  padding: 24px 16px;
+  border-radius: 20px;
+  background-color: #dff2e0;
+}
+
+.profileStoriesEmptyTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #111;
+}
+
+.profileStoriesButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background-color: #4b9951;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.profileStoriesButton:hover {
+  background-color: #397d3f;
+}
+
+.profileStoriesList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.profileStoriesItem {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .profileStoriesEmptyCard {
+    max-width: 360px;
+    padding: 24px;
+  }
+
+  .profileStoriesButton {
+    width: auto;
+  }
+
+  .profileStoriesList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .profileStoriesList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

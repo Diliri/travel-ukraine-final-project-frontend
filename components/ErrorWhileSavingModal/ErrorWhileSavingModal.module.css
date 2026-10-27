@@ -1,0 +1,87 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 55%);
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 560px);
+  padding: 48px 32px 32px;
+  border-radius: 24px;
+  background: #fff;
+  color: #1b391b;
+  text-align: center;
+}
+
+.modal h2 {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 5vw, 32px);
+}
+
+.modal p {
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.actions a {
+  display: grid;
+  min-width: 150px;
+  min-height: 48px;
+  place-items: center;
+  padding: 8px 16px;
+  border: 1px solid #4a9849;
+  border-radius: 6px;
+  background: #4a9849;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.actions a:first-child {
+  background: #fff;
+  color: #1b391b;
+}
+
+.actions a:hover,
+.actions a:focus-visible {
+  filter: brightness(0.94);
+}
+
+@media (max-width: 420px) {
+  .modal {
+    padding: 48px 20px 24px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions a {
+    width: 100%;
+  }
+}

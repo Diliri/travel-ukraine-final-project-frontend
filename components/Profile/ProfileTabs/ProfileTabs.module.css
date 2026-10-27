@@ -1,0 +1,41 @@
+.profileTabs {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px;
+
+  border-radius: 10px;
+  background-color: #dff2e0;
+}
+
+.profileTabsLink {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #1b391b;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.profileTabsActive {
+  border-color: #b6d7b9;
+  background-color: #f0faf0;
+}
+
+@media (min-width: 768px) {
+  .profileTabs {
+    width: 300px;
+  }
+
+  .profileTabsLink {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
