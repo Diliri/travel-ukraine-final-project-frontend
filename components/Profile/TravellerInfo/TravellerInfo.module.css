@@ -3,12 +3,12 @@
   align-items: center;
   gap: 24px;
   width: 100%;
-  padding: 48px 64px 0;
+  padding: 32px 20px 0;
 }
 
 .profileTravellerAvatar {
-  width: 145px;
-  height: 145px;
+  width: 113px;
+  height: 113px;
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
@@ -36,7 +36,7 @@
 .profileTravellerName {
   margin: 0;
   color: #1b391b;
-  font-size: 32px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -44,25 +44,32 @@
 .profileTravellerArticles {
   margin: 0;
   color: #1b391b;
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1.5;
   font-weight: 400;
 }
 
 @media (min-width: 768px) {
-  .profileTravellerAvatar {
-    width: 80px;
-    height: 80px;
+  .profileTraveller {
+    padding: 32px 32px 0;
   }
 
-  .profileTravellerName {
-    font-size: 20px;
+  .profileTravellerAvatar {
+    width: 145px;
+    height: 145px;
   }
 }
 
 @media (min-width: 1440px) {
-  .profileTravellerAvatar {
-    width: 96px;
-    height: 96px;
+  .profileTraveller {
+    padding: 48px 64px 0;
+  }
+
+  .profileTravellerName {
+    font-size: 32px;
+  }
+
+  .profileTravellerArticles {
+    font-size: 20px;
   }
 }
