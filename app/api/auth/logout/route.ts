@@ -1,23 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const backendUrl = process.env.BACKEND_URL;
+  const configuredBackendUrl = process.env.BACKEND_URL?.trim();
 
-  if (!backendUrl) {
-    return NextResponse.json({ message: 'BACKEND_URL is not configured' }, { status: 500 });
+  if (!configuredBackendUrl) {
+    return NextResponse.json(
+      { message: 'BACKEND_URL is not configured' },
+      { status: 500 },
+    );
+  }
+
+  const backendUrl = /^[a-z][a-z\d+.-]*:\/\//i.test(configuredBackendUrl)
+    ? configuredBackendUrl
+    : `http://${configuredBackendUrl}`;
+  const logoutUrl = new URL('/api/auth/logout', backendUrl);
+
+  if (!['http:', 'https:'].includes(logoutUrl.protocol)) {
+    return NextResponse.json(
+      { message: 'BACKEND_URL must use http:// or https://' },
+      { status: 500 },
+    );
   }
 
   try {
-    const response = await fetch(`${backendUrl}/api/auth/logout`, {
+    const response = await fetch(logoutUrl, {
       method: 'POST',
       headers: {
-        cookie: request.headers.get('cookie') ?? '',
+        Cookie: request.headers.get('cookie') ?? '',
       },
       cache: 'no-store',
     });
 
-    const result = new NextResponse(null, {
+    const result = new NextResponse(response.body, {
       status: response.status,
+      headers: {
+        'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
+      },
     });
 
     for (const cookie of response.headers.getSetCookie()) {

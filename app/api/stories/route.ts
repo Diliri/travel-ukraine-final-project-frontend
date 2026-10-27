@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   const limit = request.nextUrl.searchParams.get('limit') ?? '9';
   const page = request.nextUrl.searchParams.get('page') ?? '1';
+  const category = request.nextUrl.searchParams.get('category');
 
   if (!['8', '9'].includes(limit)) {
     return Response.json({ message: 'limit must be 8 or 9' }, { status: 400 });
@@ -31,14 +32,35 @@ export async function GET(request: NextRequest) {
 
   storiesUrl.searchParams.set('perPage', limit);
   storiesUrl.searchParams.set('page', page);
-  const category = request.nextUrl.searchParams.get('category');
-  if (category) storiesUrl.searchParams.set('category', category);
+  if (category) {
+    storiesUrl.searchParams.set('category', category);
+  }
   const response = await fetch(storiesUrl, { cache: 'no-store' });
 
-  return new Response(response.body, {
-    status: response.status,
-    headers: {
-      'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
-    },
-  });
+  if (!response.ok) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
+      },
+    });
+  }
+
+  const payload: unknown = await response.json();
+  const stories =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'stories' in payload &&
+    Array.isArray(payload.stories)
+      ? payload.stories
+      : null;
+
+  if (!stories) {
+    return Response.json(
+      { message: 'Backend returned an invalid stories response' },
+      { status: 502 },
+    );
+  }
+
+  return Response.json(stories);
 }

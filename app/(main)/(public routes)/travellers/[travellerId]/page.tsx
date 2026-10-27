@@ -26,7 +26,7 @@ interface TravellerResponse {
 }
 
 async function getTraveller(id: string): Promise<TravellerResponse | null> {
-  const res = await fetch(`${API_URL}/users/${id}?page=1&limit=6`, {
+  const res = await fetch(`${API_URL}/users/${id}?page=1&perPage=6`, {
     cache: 'no-store',
   });
   if (!res.ok) return null;

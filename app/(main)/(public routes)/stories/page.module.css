@@ -213,15 +213,26 @@
 .dot {
   margin: 3px 8px;
 }
-
-.rate {
-  display: flex;
-  font-weight: 400;
+.storiesContent {
+  animation: category-content-enter 240ms ease-out both;
 }
 
-.small_flag {
-  margin-left: 6px;
-  align-self: center;
+@keyframes category-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storiesContent {
+    animation: none;
+  }
 }
 
 .empty {
@@ -266,10 +277,6 @@
     width: calc(100% - 40px);
     max-width: 1280px;
     padding-top: 32px;
-  }
-
-  .content {
-    padding: 16px;
   }
 
   .categories {

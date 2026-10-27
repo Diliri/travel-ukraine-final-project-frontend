@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 import toast from "react-hot-toast";
 import AuthNavigation from "@/components/AuthNavigation/AuthNavigation";
-import { register } from "@/lib/api/clientApi";
+import { login, register } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { CURRENT_USER_KEY } from "@/hooks/useCurrentUser";
 import {
   loginSchema,
   registerSchema,
@@ -115,6 +117,7 @@ function PasswordField({ id, autoComplete, hasError }: PasswordFieldProps) {
 
 export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const setUser = useAuthStore((state) => state.setUser);
   const isRegister = type === "register";
 
@@ -146,11 +149,12 @@ export default function AuthForm({ type }: AuthFormProps) {
           validateOnChange={false}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const { user } = await register({
+              const result = await register({
                 name: values.name.trim(),
                 email: values.email.trim(),
                 password: values.password,
               });
+              const user = "user" in result ? result.user : result;
 
               setUser(user);
               toast.success("Реєстрація успішна");
@@ -251,9 +255,23 @@ export default function AuthForm({ type }: AuthFormProps) {
         validationSchema={loginSchema}
         validateOnBlur
         validateOnChange={false}
-        onSubmit={async (_values, { setSubmitting }) => {
-          toast.error("Логін ще в розробці");
-          setSubmitting(false);
+        onSubmit={async (values, { setSubmitting }) => {
+          try {
+            const user = await login({
+              email: values.email.trim(),
+              password: values.password,
+            });
+
+            setUser(user);
+            queryClient.setQueryData(CURRENT_USER_KEY, user);
+            toast.success("Вхід успішний");
+            router.replace("/profile");
+            router.refresh();
+          } catch (error) {
+            toast.error(getErrorMessage(error));
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         {({ isSubmitting, errors, touched }) => (

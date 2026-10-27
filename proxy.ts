@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 
 const protectedRoutes = ["/profile", "/stories/create"];
-const authRoutes = ["/login", "/register"];
 
 type ParsedCookie = {
   name: string;
@@ -133,15 +132,17 @@ export async function proxy(request: NextRequest) {
   const cookieStore = await cookies();
   let accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
+  const sessionId = cookieStore.get("sessionId")?.value;
 
   let sessionResponseCookies: string[] = [];
 
-  if (!accessToken && refreshToken) {
+  if (!accessToken && refreshToken && sessionId) {
     try {
       const refreshUrl = new URL("/api/auth/refresh", request.url);
       const refreshResponse = await fetch(refreshUrl, {
+        method: "POST",
         headers: {
-          Cookie: `refreshToken=${refreshToken}`,
+          Cookie: `sessionId=${sessionId}; refreshToken=${refreshToken}`,
         },
         cache: "no-store",
       });
@@ -169,21 +170,11 @@ export async function proxy(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some((route) =>
     isMatchingRoute(pathname, route),
   );
-  const isAuthRoute = authRoutes.some((route) =>
-    isMatchingRoute(pathname, route),
-  );
-
   if (isProtectedRoute && !accessToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname + search);
 
     const response = NextResponse.redirect(loginUrl);
-    setCookiesIfPresent(response, sessionResponseCookies);
-    return response;
-  }
-
-  if (isAuthRoute && accessToken) {
-    const response = NextResponse.redirect(new URL("/", request.url));
     setCookiesIfPresent(response, sessionResponseCookies);
     return response;
   }
