@@ -205,7 +205,7 @@ export default function StoriesList({
             toast.error(
               userResult.error instanceof Error
                 ? userResult.error.message
-                : 'Не вдалося перевірити авторизацію',
+                : 'Не вдалося перевірити авторизацію'
             );
           }
           return;
@@ -219,8 +219,7 @@ export default function StoriesList({
         return;
       }
 
-      const isSaved =
-        favoriteStoryIds[storyId] ?? user.savedArticles?.includes(storyId) ?? false;
+      const isSaved = favoriteStoryIds[storyId] ?? user.savedArticles?.includes(storyId) ?? false;
       const shouldAdd = !isSaved;
       const response = await fetch(`/api/stories/${storyId}/favorite`, {
         method: shouldAdd ? 'POST' : 'DELETE',
@@ -231,9 +230,7 @@ export default function StoriesList({
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { message?: string }
-          | null;
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null;
         if (response.status === 401) {
           setIsSavingModalOpen(true);
           return;
@@ -245,12 +242,22 @@ export default function StoriesList({
         ...current,
         [storyId]: shouldAdd,
       }));
+
+      setStories(current =>
+        current.map(story =>
+          story._id === storyId
+            ? {
+                ...story,
+                rate: Math.max(0, story.rate + (shouldAdd ? 1 : -1)),
+              }
+            : story
+        )
+      );
+
       toast.success(shouldAdd ? 'Історію збережено' : 'Історію видалено зі збережених');
     } catch (requestError) {
       toast.error(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Не вдалося оновити список улюблених',
+        requestError instanceof Error ? requestError.message : 'Не вдалося оновити список улюблених'
       );
     } finally {
       setSavingStoryId(null);
@@ -258,9 +265,7 @@ export default function StoriesList({
   };
 
   const isStorySaved = (storyId: string) =>
-    favoriteStoryIds[storyId] ??
-    currentUser?.savedArticles?.includes(storyId) ??
-    false;
+    favoriteStoryIds[storyId] ?? currentUser?.savedArticles?.includes(storyId) ?? false;
 
   if (stories.length === 0 && !error) {
     return <p className={styles.empty}>Історій поки немає.</p>;
@@ -305,36 +310,25 @@ export default function StoriesList({
                   isSaving={savingStoryId === story._id}
                   onToggleSaved={storyId => void toggleFavorite(storyId)}
                 />
-            </li>
-          ))}
-        </ul>
-      )}
-      {stories.length === 0 && !isLoading && !error && (
-        <p className={styles.empty}>Історій у цій категорії поки немає.</p>
-      )}
-      {isFiltering && <p className={styles.status} role="status">Завантаження історій…</p>}
-      {mode === 'all' && !isFiltering && <Pagination
-        hasMore={hasMore}
-        isLoading={isLoading}
-        onLoadMore={loadNextPage}
-        hasError={paginationError}
-        controls="stories-list"
-      />}
-      <span className="visually-hidden" role="status">
-        {isLoading ? 'Завантаження історій…' : `Завантажено історій: ${stories.length}`}
-      </span>
-      {error && (
-        <div className={styles.status} role="alert">
-          <p>{error}</p>
-        </div>
-      )}
-      {!hasMore && stories.length > 0 && (
-        <p className={styles.status}>Ви переглянули всі історії.</p>
-      )}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div ref={endRef} aria-hidden="true" />
+        {isLoading && <p className={styles.status}>Завантаження історій…</p>}
+        {error && (
+          <div className={styles.status} role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={() => window.location.reload()}>
+              Оновити сторінку
+            </button>
+          </div>
+        )}
+        {!hasMore && stories.length > 0 && (
+          <p className={styles.status}>Ви переглянули всі історії.</p>
+        )}
       </div>
-      {isSavingModalOpen && (
-        <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />
-      )}
+      {isSavingModalOpen && <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />}
     </>
   );
 }

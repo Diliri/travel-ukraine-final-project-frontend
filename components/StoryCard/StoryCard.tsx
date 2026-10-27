@@ -27,9 +27,11 @@ export default function StoryCard({
   onToggleSaved,
 }: StoryCardProps) {
   const author =
-    typeof story.ownerId === 'object' && story.ownerId !== null
+    story.author ||
+    (typeof story.ownerId === 'object' && story.ownerId !== null
       ? story.ownerId.name
-      : (story.author ?? 'Мандрівник');
+      : undefined) ||
+    'Мандрівник';
 
   return (
     <article className={styles.card}>
