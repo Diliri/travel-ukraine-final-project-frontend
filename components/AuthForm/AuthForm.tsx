@@ -5,20 +5,12 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 import toast from "react-hot-toast";
-import AuthNavigation from "@/components/AuthNavigation/AuthNavigation";
-import { login, register } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
-import { useQueryClient } from "@tanstack/react-query";
-import { CURRENT_USER_KEY } from "@/hooks/useCurrentUser";
-import {
-  loginSchema,
-  registerSchema,
-} from "@/lib/validation/authValidation";
-import css from "./AuthForm.module.css";
 
-type AuthFormProps = {
-  type: "register" | "login";
-};
+import { register } from "@/lib/api/clientApi";
+import { useAuthStore } from "@/lib/store/authStore";
+
+import { registerSchema } from "@/lib/validation/authValidation";
+import css from "./AuthForm.module.css";
 
 type RegisterValues = {
   name: string;
@@ -26,10 +18,6 @@ type RegisterValues = {
   password: string;
 };
 
-type LoginValues = {
-  email: string;
-  password: string;
-};
 
 function getErrorMessage(error: unknown) {
   if (isAxiosError(error)) {
@@ -115,20 +103,15 @@ function PasswordField({ id, autoComplete, hasError }: PasswordFieldProps) {
   );
 }
 
-export default function AuthForm({ type }: AuthFormProps) {
+export default function AuthForm() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const setUser = useAuthStore((state) => state.setUser);
-  const isRegister = type === "register";
 
-  const title = isRegister ? "Реєстрація" : "Вітаємо знову";
-  const subtitle = isRegister
-    ? "Раді вас бачити у спільноті мандрівників!"
-    : "Увійдіть, щоб продовжити мандрівку";
-  const submitLabel = isRegister ? "Зареєструватись" : "Увійти";
+  const title = "Реєстрація";
+  const subtitle = "Раді вас бачити у спільноті мандрівників!";
+  const submitLabel = "Зареєструватись";
 
-  if (isRegister) {
-    const initialValues: RegisterValues = {
+  const initialValues: RegisterValues = {
       name: "",
       email: "",
       password: "",
@@ -234,91 +217,4 @@ export default function AuthForm({ type }: AuthFormProps) {
         </Formik>
       </div>
     );
-  }
-
-  const initialLoginValues: LoginValues = {
-    email: "",
-    password: "",
-  };
-
-  return (
-    <div className={css.content}>
-      <AuthNavigation />
-
-      <div className={css.heading}>
-        <h1 className={css.title}>{title}</h1>
-        <p className={css.subtitle}>{subtitle}</p>
-      </div>
-
-      <Formik
-        initialValues={initialLoginValues}
-        validationSchema={loginSchema}
-        validateOnBlur
-        validateOnChange={false}
-        onSubmit={async (values, { setSubmitting }) => {
-          try {
-            const user = await login({
-              email: values.email.trim(),
-              password: values.password,
-            });
-
-            setUser(user);
-            queryClient.setQueryData(CURRENT_USER_KEY, user);
-            toast.success("Вхід успішний");
-            router.replace("/profile");
-            router.refresh();
-          } catch (error) {
-            toast.error(getErrorMessage(error));
-          } finally {
-            setSubmitting(false);
-          }
-        }}
-      >
-        {({ isSubmitting, errors, touched }) => (
-          <Form className={css.form} noValidate>
-            <div className={css.field}>
-              <label className={css.label} htmlFor="email">
-                Пошта*
-              </label>
-              <Field
-                id="email"
-                name="email"
-                type="email"
-                placeholder="hello@podorozhnyky.ua"
-                className={`${css.input}${
-                  touched.email && errors.email ? ` ${css.inputError}` : ""
-                }`}
-                autoComplete="email"
-              />
-              <ErrorMessage name="email" component="p" className={css.error} />
-            </div>
-
-            <div className={css.field}>
-              <label className={css.label} htmlFor="password">
-                Пароль*
-              </label>
-              <PasswordField
-                id="password"
-                autoComplete="current-password"
-                hasError={Boolean(touched.password && errors.password)}
-              />
-              <ErrorMessage
-                name="password"
-                component="p"
-                className={css.error}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className={css.button}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Входжу…" : submitLabel}
-            </button>
-          </Form>
-        )}
-      </Formik>
-    </div>
-  );
 }
