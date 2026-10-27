@@ -4,6 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import ErrorWhileSavingModal from '@/components/ErrorWhileSavingModal/ErrorWhileSavingModal';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { ApiError } from '@/lib/api/profileApi';
 import styles from './page.module.css';
 
 type Story = {
@@ -67,6 +71,9 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
+  const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
+  const [isSavingModalOpen, setIsSavingModalOpen] = useState(false);
+  const { data: currentUser, refetch: refetchCurrentUser } = useCurrentUser();
   const loadingRef = useRef(false);
   const endRef = useRef<HTMLDivElement>(null);
   const pendingScrollId = useRef<string | null>(null);
@@ -223,9 +230,38 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
   }, [stories]);
 
   const toggleFavorite = async (storyId: string) => {
-    const shouldAdd = !favoriteStoryIds[storyId];
+    if (savingStoryId) return;
 
+    setSavingStoryId(storyId);
     try {
+      let user = currentUser;
+      if (!user) {
+        const userResult = await refetchCurrentUser();
+
+        if (userResult.error) {
+          if (userResult.error instanceof ApiError && userResult.error.status === 401) {
+            setIsSavingModalOpen(true);
+          } else {
+            toast.error(
+              userResult.error instanceof Error
+                ? userResult.error.message
+                : 'Не вдалося перевірити авторизацію',
+            );
+          }
+          return;
+        }
+
+        user = userResult.data;
+      }
+
+      if (!user) {
+        setIsSavingModalOpen(true);
+        return;
+      }
+
+      const isSaved =
+        favoriteStoryIds[storyId] ?? user.savedArticles?.includes(storyId) ?? false;
+      const shouldAdd = !isSaved;
       const response = await fetch(`/api/stories/${storyId}/favorite`, {
         method: shouldAdd ? 'POST' : 'DELETE',
         credentials: 'include',
@@ -238,6 +274,10 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
         const payload = (await response.json().catch(() => null)) as
           | { message?: string }
           | null;
+        if (response.status === 401) {
+          setIsSavingModalOpen(true);
+          return;
+        }
         throw new Error(payload?.message || 'Не вдалося оновити список улюблених');
       }
 
@@ -245,14 +285,22 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
         ...current,
         [storyId]: shouldAdd,
       }));
+      toast.success(shouldAdd ? 'Історію збережено' : 'Історію видалено зі збережених');
     } catch (requestError) {
-      setError(
+      toast.error(
         requestError instanceof Error
           ? requestError.message
           : 'Не вдалося оновити список улюблених',
       );
+    } finally {
+      setSavingStoryId(null);
     }
   };
+
+  const isStorySaved = (storyId: string) =>
+    favoriteStoryIds[storyId] ??
+    currentUser?.savedArticles?.includes(storyId) ??
+    false;
 
   if (stories.length === 0 && !error) {
     return <p className={styles.empty}>Історій поки немає.</p>;
@@ -344,15 +392,24 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
                     <button
                       type="button"
                       className={styles.readMore_flag}
+                      disabled={savingStoryId === story._id}
+                      aria-busy={savingStoryId === story._id}
                       aria-label={
-                        favoriteStoryIds[story._id] ? 'Видалити з улюблених' : 'Додати в улюблені'
+                        savingStoryId === story._id
+                          ? 'Збереження історії'
+                          : isStorySaved(story._id)
+                            ? 'Видалити зі збережених'
+                            : 'Додати до збережених'
                       }
                       onClick={() => void toggleFavorite(story._id)}
                       style={{
-                        color: favoriteStoryIds[story._id] ? '#fff' : undefined,
-                        backgroundColor: favoriteStoryIds[story._id] ? '#4a9849' : undefined,
+                        color: isStorySaved(story._id) ? '#fff' : undefined,
+                        backgroundColor: isStorySaved(story._id) ? '#4a9849' : undefined,
                       }}
                     >
+                      {savingStoryId === story._id && (
+                        <span className={styles.favoriteSpinner} aria-hidden="true" />
+                      )}
                       <svg
                         width="24"
                         height="24"
@@ -385,6 +442,9 @@ export default function StoriesList({ initialStories }: StoriesListProps) {
       )}
       {!hasMore && stories.length > 0 && (
         <p className={styles.status}>Ви переглянули всі історії.</p>
+      )}
+      {isSavingModalOpen && (
+        <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />
       )}
     </>
   );

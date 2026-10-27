@@ -29,14 +29,34 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  storiesUrl.searchParams.set('limit', limit);
+  storiesUrl.searchParams.set('perPage', limit);
   storiesUrl.searchParams.set('page', page);
   const response = await fetch(storiesUrl, { cache: 'no-store' });
 
-  return new Response(response.body, {
-    status: response.status,
-    headers: {
-      'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
-    },
-  });
+  if (!response.ok) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
+      },
+    });
+  }
+
+  const payload: unknown = await response.json();
+  const stories =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'stories' in payload &&
+    Array.isArray(payload.stories)
+      ? payload.stories
+      : null;
+
+  if (!stories) {
+    return Response.json(
+      { message: 'Backend returned an invalid stories response' },
+      { status: 502 },
+    );
+  }
+
+  return Response.json(stories);
 }

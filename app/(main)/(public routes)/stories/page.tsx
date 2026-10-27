@@ -40,7 +40,7 @@ async function getStories(limit: 8 | 9): Promise<Story[]> {
     ? configuredBackendUrl
     : `http://${configuredBackendUrl}`;
   const storiesUrl = new URL('/api/stories', backendUrl);
-  storiesUrl.searchParams.set('limit', String(limit));
+  storiesUrl.searchParams.set('perPage', String(limit));
   storiesUrl.searchParams.set('page', '1');
 
   if (!['http:', 'https:'].includes(storiesUrl.protocol)) {
@@ -55,7 +55,15 @@ async function getStories(limit: 8 | 9): Promise<Story[]> {
     throw new Error(`Не вдалося завантажити історії: ${response.status}`);
   }
 
-  const stories: unknown = await response.json();
+  const payload: unknown = await response.json();
+  const stories =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'stories' in payload &&
+    Array.isArray(payload.stories)
+      ? payload.stories
+      : null;
+
   if (!Array.isArray(stories) || !stories.every(isStory)) {
     throw new Error('Сервер повернув некоректний список історій');
   }
