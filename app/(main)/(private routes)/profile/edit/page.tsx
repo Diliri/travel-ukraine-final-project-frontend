@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   description: "Змініть фото, email та пароль у вашому профілі.",
 };
 
-// Авторизацію перевіряє ProfileGuard у profile/layout.tsx.
+// Контейнер, відступи та авторизацію (ProfileGuard) дає profile/layout.tsx.
 export default function PersonalPage() {
   return (
-    <section className={`container ${css.page}`}>
+    <section>
       <h2 className={css.title}>Персональна інформація</h2>
       <PersonalSettings />
     </section>

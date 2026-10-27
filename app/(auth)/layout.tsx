@@ -1,6 +1,7 @@
 import Logo from "@/components/Logo/Logo";
 import EscapeToHome from "./EscapeToHome";
 import css from "./AuthLayout.module.css";
+import AuthNavigation from "@/components/AuthNavigation/AuthNavigation";
 
 export default function AuthLayout({
   children,
@@ -17,7 +18,10 @@ export default function AuthLayout({
         <Logo />
       </header>
 
-      <main className={css.main}>{children}</main>
+      <main className={css.main}>
+        <AuthNavigation />
+        {children}
+      </main>
 
       <footer className={css.footer}>
         <p className={css.copyright}>© {year} Природні Мандри</p>

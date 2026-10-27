@@ -133,7 +133,6 @@ export default function AuthForm({ type }: AuthFormProps) {
 
     return (
       <div className={css.content}>
-        <AuthNavigation />
 
         <div className={css.heading}>
           <h1 className={css.title}>{title}</h1>

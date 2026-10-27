@@ -57,7 +57,11 @@ export default function ChangePasswordForm() {
       toast.success("Пароль змінено");
       reset();
     } catch (error) {
-      if (error instanceof ApiError && error.status === 400) {
+      if (
+        error instanceof ApiError &&
+        error.status === 400 &&
+        error.message.includes("Поточний пароль")
+      ) {
         setServerCurrentError(error.message); // «Поточний пароль невірний»
       } else {
         toast.error(error instanceof Error ? error.message : "Не вдалося змінити пароль");
