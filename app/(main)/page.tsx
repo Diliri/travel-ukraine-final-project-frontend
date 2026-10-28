@@ -1,6 +1,7 @@
 import Hero from '@/components/Hero/Hero';
 import PopularStoriesSection from '@/components/PopularStoriesSection/PopularStoriesSection';
 import OurTravellers from '@/components/OurTravellers/OurTravellers';
+import JoinUs from '@/components/JoinUs/JoinUs';
 
 export default function HomePage() {
   return (
@@ -8,6 +9,7 @@ export default function HomePage() {
       <Hero />
     <PopularStoriesSection />
       <OurTravellers />
+      <JoinUs isAuthenticated={false} />
     </>
   );
 }

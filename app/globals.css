@@ -145,6 +145,13 @@ select:focus {
   color: var(--color-red);
 }
 
+.loader {
+  margin: 0;
+  padding: 32px 16px;
+  background-color: #eef8ee;
+  color: #1b391b;
+}
+
 @media screen and (min-width: 375px) {
   .container {
     max-width: 375px;
