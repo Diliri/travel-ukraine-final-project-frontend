@@ -9,7 +9,7 @@ export type StoryCardData = {
   img: string;
   title: string;
   rate: number;
-  ownerId?: { name: string } | string;
+  ownerId?: { name: string } | string ;
   author?: string;
 };
 

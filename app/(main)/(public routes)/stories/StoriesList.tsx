@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { isAxiosError } from 'axios';
 import ErrorWhileSavingModal from '@/components/ErrorWhileSavingModal/ErrorWhileSavingModal';
 import StoryCard, { type StoryCardData } from '@/components/StoryCard/StoryCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiError } from '@/lib/api/profileApi';
+import { getStoriesClient } from '@/lib/api/clientApi';
 import styles from './page.module.css';
 
 type Story = StoryCardData & {
@@ -20,96 +22,95 @@ type Category = {
   category: string;
 };
 
-type StoriesListProps = {
-  initialStories: Story[];
-  initialCategory?: string;
-  initialCategories: Category[];
-  categoriesError: string | null;
-};
+type StoriesListProps =
+  | {
+      mode?: 'listing';
+      initialStories: Story[];
+      initialCategory?: string;
+      initialCategories: Category[];
+      categoriesError: string | null;
+    }
+  | {
+      mode: 'recommendations';
+      initialStories: Story[];
+    };
 
-function getStoriesUrl(limit: 8 | 9, page: number, category?: string) {
-  const params = new URLSearchParams({
-    limit: String(limit),
-    page: String(page),
-  });
-
-  if (category) {
-    params.set('category', category);
+function getErrorMessage(
+  error: unknown,
+  fallback = 'Сталася помилка. Спробуйте ще раз.'): string {
+  if (isAxiosError<{ message?: string }>(error)) {
+    return error.response?.data?.message || fallback;
   }
 
-  return `/api/stories?${params.toString()}`;
-}
+  if (error instanceof Error) return error.message;
+  return fallback;
+};
 
-function isStory(value: unknown): value is Story {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_id' in value &&
-    typeof value._id === 'string' &&
-    'img' in value &&
-    typeof value.img === 'string' &&
-    'title' in value &&
-    typeof value.title === 'string' &&
-    'rate' in value &&
-    typeof value.rate === 'number' &&
-    (!('desc' in value) || typeof value.desc === 'string') &&
-    (!('article' in value) || typeof value.article === 'string') &&
-    (!('author' in value) || typeof value.author === 'string') &&
-    (!('date' in value) || typeof value.date === 'string')
-  );
-}
+export default function StoriesList(props: StoriesListProps) {
+  //PROPS SETUP
+  const { initialStories } = props;
+  const isRecommendations = props.mode === 'recommendations';
 
-export default function StoriesList({
-  initialStories,
-  initialCategory,
-  initialCategories,
-  categoriesError,
-}: StoriesListProps) {
-  const [stories, setStories] = useState(initialStories);
+  const initialCategory = isRecommendations ? undefined : props.initialCategory;
+  const initialCategories = isRecommendations ? [] : props.initialCategories;
+  const categoriesError = isRecommendations ? null : props.categoriesError;
+
+  // STORIES
+  const [stories, setStories] = useState<Story[]>(initialStories);
   const categories = initialCategories;
+  const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
+  const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
+
+  // PAGINATION
   const [limit, setLimit] = useState<8 | 9>(9);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialStories.length === 9);
+  const [paginationError, setPaginationError] = useState(false);
+
+  // LOADERS
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paginationError, setPaginationError] = useState(false);
-  const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
-  const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
   const [isSavingModalOpen, setIsSavingModalOpen] = useState(false);
   const { data: currentUser, refetch: refetchCurrentUser } = useCurrentUser();
   const loadingRef = useRef(false);
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchPage = useCallback(
+    async (targetPage: number, perPage: 8 | 9) => {
+      const response = await getStoriesClient({
+        categoryId: initialCategory,
+        page: targetPage,
+        perPage,
+      });
+
+      const pageStories = response.stories as Story[];
+      const more = pageStories.length === perPage;
+
+      return { pageStories, more };
+    },
+    [initialCategory]
+  );
 
   useEffect(() => {
+    if (isRecommendations) return;
     const desktop = window.matchMedia('(min-width: 1440px)');
 
     const updateLimit = async (nextLimit: 8 | 9) => {
-      if (nextLimit === limit || loadingRef.current) {
-        return;
-      }
+      if (nextLimit === limit || loadingRef.current) return;
 
       loadingRef.current = true;
       setIsLoading(true);
 
       try {
-        const response = await fetch(getStoriesUrl(nextLimit, 1, initialCategory));
-        if (!response.ok) {
-          throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-        }
-
-        const data: unknown = await response.json();
-        if (!Array.isArray(data) || !data.every(isStory)) {
-          throw new Error('Сервер повернув некоректний список історій');
-        }
-
-        setStories(data);
+        const { pageStories, more } = await fetchPage(1, nextLimit);
+        setStories(pageStories);
         setLimit(nextLimit);
         setPage(1);
-        setHasMore(data.length === nextLimit);
+        setHasMore(more);
+        setPaginationError(false);
         setError(null);
       } catch (requestError) {
-        setError(
-          requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
-        );
+        setError(getErrorMessage(requestError, 'Не вдалося завантажити історії'));
       } finally {
         loadingRef.current = false;
         setIsLoading(false);
@@ -120,18 +121,14 @@ export default function StoriesList({
       void updateLimit(event.matches ? 9 : 8);
     };
 
-    if ((desktop.matches ? 9 : 8) !== limit) {
-      handleChange(desktop);
-    }
+    handleChange(desktop);
     desktop.addEventListener('change', handleChange);
 
     return () => desktop.removeEventListener('change', handleChange);
-  }, [limit, initialCategory]);
+  }, [isRecommendations, limit, fetchPage]);
 
   const loadNextPage = useCallback(async () => {
-    if (loadingRef.current || !hasMore) {
-      return;
-    }
+    if (loadingRef.current || !hasMore) return;
 
     loadingRef.current = true;
     setIsLoading(true);
@@ -140,54 +137,37 @@ export default function StoriesList({
 
     try {
       const nextPage = page + 1;
-      const response = await fetch(getStoriesUrl(limit, nextPage, initialCategory));
-      if (!response.ok) {
-        throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-      }
+      const { pageStories, more } = await fetchPage(nextPage, limit);
 
-      const data: unknown = await response.json();
-      if (!Array.isArray(data) || !data.every(isStory)) {
-        throw new Error('Сервер повернув некоректний список історій');
-      }
-
-      if (data.length > 0) {
-        setStories(currentStories => {
-          const existingIds = new Set(currentStories.map(story => story._id));
-          return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
-        });
-      }
-      setPagination(result.pagination);
+      setStories(current => {
+        const existingIds = new Set(current.map(story => story._id));
+        return [...current, ...pageStories.filter(story => !existingIds.has(story._id))];
+      });
+      setPage(nextPage);
+      setHasMore(more);
     } catch (requestError) {
       setPaginationError(true);
-      setError(
-        requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
-      );
+      setError(getErrorMessage(requestError, 'Не вдалося завантажити історії'));
     } finally {
       loadingRef.current = false;
       setIsLoading(false);
     }
-  }, [hasMore, limit, page, initialCategory]);
+  }, [hasMore, limit, page, fetchPage]);
 
-  const changeCategory = async (category: string) => {
-    if (loadingRef.current || category === selectedCategory) return;
-    loadingRef.current = true;
-    setIsLoading(true);
-    setIsFiltering(true);
-    setError(null);
-    try {
-      const result = await fetchStoriesPage(1, limit, category);
-      setStories(result.stories);
-      setSelectedCategory(category);
-      setPagination(result.pagination);
-      setPaginationError(false);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії');
-    } finally {
-      loadingRef.current = false;
-      setIsLoading(false);
-      setIsFiltering(false);
-    }
-  };
+  useEffect(() => {
+    const node = endRef.current;
+    if (!node || !hasMore || paginationError) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0]?.isIntersecting) void loadNextPage();
+      },
+      { rootMargin: '300px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, paginationError, loadNextPage, stories.length]);
 
   const toggleFavorite = async (storyId: string) => {
     if (savingStoryId) return;
@@ -202,11 +182,7 @@ export default function StoriesList({
           if (userResult.error instanceof ApiError && userResult.error.status === 401) {
             setIsSavingModalOpen(true);
           } else {
-            toast.error(
-              userResult.error instanceof Error
-                ? userResult.error.message
-                : 'Не вдалося перевірити авторизацію'
-            );
+            toast.error(getErrorMessage(userResult.error, 'Не вдалося перевірити авторизацію'));
           }
           return;
         }
@@ -224,9 +200,7 @@ export default function StoriesList({
       const response = await fetch(`/api/stories/${storyId}/favorite`, {
         method: shouldAdd ? 'POST' : 'DELETE',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) {
@@ -238,27 +212,19 @@ export default function StoriesList({
         throw new Error(payload?.message || 'Не вдалося оновити список улюблених');
       }
 
-      setFavoriteStoryIds(current => ({
-        ...current,
-        [storyId]: shouldAdd,
-      }));
+      setFavoriteStoryIds(current => ({ ...current, [storyId]: shouldAdd }));
 
       setStories(current =>
         current.map(story =>
           story._id === storyId
-            ? {
-                ...story,
-                rate: Math.max(0, story.rate + (shouldAdd ? 1 : -1)),
-              }
+            ? { ...story, rate: Math.max(0, story.rate + (shouldAdd ? 1 : -1)) }
             : story
         )
       );
 
       toast.success(shouldAdd ? 'Історію збережено' : 'Історію видалено зі збережених');
     } catch (requestError) {
-      toast.error(
-        requestError instanceof Error ? requestError.message : 'Не вдалося оновити список улюблених'
-      );
+      toast.error(getErrorMessage(requestError, 'Не вдалося оновити список улюблених'));
     } finally {
       setSavingStoryId(null);
     }
@@ -266,10 +232,6 @@ export default function StoriesList({
 
   const isStorySaved = (storyId: string) =>
     favoriteStoryIds[storyId] ?? currentUser?.savedArticles?.includes(storyId) ?? false;
-
-  if (stories.length === 0 && !error) {
-    return <p className={styles.empty}>Історій поки немає.</p>;
-  }
 
   return (
     <>
@@ -298,8 +260,10 @@ export default function StoriesList({
           })}
         </ul>
       )}
+
       <div className={styles.storiesContent}>
         {stories.length === 0 && !error && <p className={styles.empty}>Історій поки немає.</p>}
+
         {stories.length > 0 && (
           <ul className={styles.list} data-limit={limit}>
             {stories.map(story => (
@@ -314,21 +278,35 @@ export default function StoriesList({
             ))}
           </ul>
         )}
+
         <div ref={endRef} aria-hidden="true" />
+
         {isLoading && <p className={styles.status}>Завантаження історій…</p>}
+
         {error && (
           <div className={styles.status} role="alert">
             <p>{error}</p>
-            <button type="button" onClick={() => window.location.reload()}>
-              Оновити сторінку
-            </button>
+            {paginationError ? (
+              <button type="button" onClick={() => void loadNextPage()}>
+                Спробувати ще раз
+              </button>
+            ) : (
+              <button type="button" onClick={() => window.location.reload()}>
+                Оновити сторінку
+              </button>
+            )}
           </div>
         )}
+
         {!hasMore && stories.length > 0 && (
           <p className={styles.status}>Ви переглянули всі історії.</p>
         )}
       </div>
-      {isSavingModalOpen && <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />}
+
+      <ErrorWhileSavingModal
+        isOpen={isSavingModalOpen}
+        onClose={() => setIsSavingModalOpen(false)}
+      />
     </>
   );
 }
