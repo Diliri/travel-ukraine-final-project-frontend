@@ -1,107 +1,116 @@
-import Image from "next/image";
-import Link from "next/link";
-import styles from "./PopularStoriesSection.module.css";
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { isAxiosError } from 'axios';
+import StoryCard from '@/components/StoryCard/StoryCard';
+import { nextServer } from '@/lib/api/api';
+import type { StoriesResponse, Story } from '@/lib/api/storiesResponse';
+import styles from './PopularStoriesSection.module.css';
+import CarouselArrowButton from '@/components/CarouselArrowButton/CarouselArrowButton';
 
 export default function PopularStoriesSection() {
-  return (
-    <section
-      className={styles.popularStories}
-      aria-labelledby="popular-stories-title"
-    >
-      <div className={styles.container}>
-        {/* Заголовок секции */}
-        <h2
-          id="popular-stories-title"
-          className={styles.title}
-        >
-          Популярні статті
-        </h2>
+  const [stories, setStories] = useState<Story[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
-        {/* Список популярных статей */}
-        <div className={styles.storiesList}>
-          {/* Карточка статьи */}
-          <article className={styles.storyCard}>
-            {/* Изображение статьи */}
-            <div className={styles.imageWrapper}>
-              <Image
-                src="/images/story-placeholder.jpg"
-                alt="Карпатські гори"
-                fill
-                sizes="(max-width: 767px) 335px, 50vw"
-                className={styles.storyImage}
+  useEffect(() => {
+    async function loadPopularStories() {
+      try {
+        const { data } = await nextServer.get<StoriesResponse>('/stories/popular', {
+          params: {
+            page: 1,
+            perPage: 3,
+          },
+        });
+
+        setStories(data.stories);
+      } catch (requestError) {
+        if (isAxiosError<{ message?: string }>(requestError)) {
+          setError(
+            requestError.response?.data?.message ?? 'Не вдалося завантажити популярні історії.'
+          );
+        } else {
+          setError('Не вдалося завантажити популярні історії.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void loadPopularStories();
+  }, []);
+
+  const scrollStories = (direction: 'next' | 'previous') => {
+    const list = listRef.current;
+    const firstCard = list?.firstElementChild;
+
+    if (!list || !(firstCard instanceof HTMLElement)) return;
+
+    const maxScroll = list.scrollWidth - list.clientWidth;
+    if (maxScroll <= 0) return;
+
+    const atStart = list.scrollLeft <= 1;
+    const atEnd = list.scrollLeft >= maxScroll - 1;
+    const gap = Number.parseFloat(getComputedStyle(list).columnGap) || 0;
+    const step = firstCard.getBoundingClientRect().width + gap;
+
+    const nextPosition =
+      direction === 'next'
+        ? atEnd
+          ? 0
+          : Math.min(list.scrollLeft + step, maxScroll)
+        : atStart
+          ? maxScroll
+          : Math.max(list.scrollLeft - step, 0);
+
+    list.scrollTo({
+      left: nextPosition,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <section className={styles.section} aria-busy={isLoading}>
+      <h2 className={styles.title}>Популярні історії</h2>
+
+      {isLoading && <p className={styles.message}>Завантаження історій...</p>}
+
+      {!isLoading && error && (
+        <p className={styles.message} role="alert">
+          {error}
+        </p>
+      )}
+
+      {!isLoading && !error && stories.length === 0 && (
+        <p className={styles.message}>Популярних історій поки немає.</p>
+      )}
+
+      {!isLoading && !error && stories.length > 0 && (
+        <>
+          <div className={styles.list} ref={listRef}>
+            {stories.map(story => (
+              <StoryCard key={story._id} story={story} />
+            ))}
+          </div>
+
+          {stories.length > 1 && (
+            <div className={styles.controls}>
+              <CarouselArrowButton
+                direction="previous"
+                label="Попередні історії"
+                onClick={() => scrollStories('previous')}
+              />
+
+              <CarouselArrowButton
+                direction="next"
+                label="Наступні історії"
+                onClick={() => scrollStories('next')}
               />
             </div>
-
-            {/* Контент карточки */}
-            <div className={styles.storyContent}>
-              {/* Автор и рейтинг */}
-              <div className={styles.storyMeta}>
-                <span className={styles.author}>
-                  Анастасія Олійник
-                </span>
-
-                <span className={styles.rating}>
-                  <span>5</span>
-                  <span aria-label="Рейтинг">★</span>
-                </span>
-              </div>
-
-              {/* Название статьи */}
-              <h3 className={styles.storyTitle}>
-                Карпати для новачків: легкі маршрути вихідного дня
-              </h3>
-
-              {/* Кнопки карточки */}
-              <div className={styles.cardActions}>
-                <Link
-                  href="/stories"
-                  className={styles.readButton}
-                >
-                  Переглянути статтю
-                </Link>
-
-                <button
-                  type="button"
-                  className={styles.favoriteButton}
-                  aria-label="Додати статтю до обраного"
-                >
-                  ♡
-                </button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        {/* Стрелки переключения карточек */}
-        <div
-          className={styles.sliderControls}
-          aria-label="Навігація між статтями"
-        >
-          <button
-            type="button"
-            className={styles.arrowButton}
-            aria-label="Попередня стаття"
-          >
-            ←
-          </button>
-
-          <button
-            type="button"
-            className={styles.arrowButton}
-            aria-label="Наступна стаття"
-          >
-            →
-          </button>
-        </div>
-
-        {/* Кнопка перехода ко всем статьям */}
-        <Link
-          href="/stories"
-          className={styles.allStoriesButton}
-        >
-          Всі статті
-        </Link>
-      </div>
+          )}
+        </>
+      )}
     </section>
   );
 }

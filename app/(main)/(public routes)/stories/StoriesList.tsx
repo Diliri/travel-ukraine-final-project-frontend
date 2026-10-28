@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import Pagination from '@/components/Pagination/Pagination';
-import { parseStoriesResponse, type Story, type PaginationMeta } from '@/lib/api/storiesResponse';
+import { type Story } from '@/lib/api/storiesResponse';
 import toast from 'react-hot-toast';
+import { isAxiosError } from 'axios';
 import ErrorWhileSavingModal from '@/components/ErrorWhileSavingModal/ErrorWhileSavingModal';
 import StoryCard from '@/components/StoryCard/StoryCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiError } from '@/lib/api/profileApi';
+import { getStoriesClient } from '@/lib/api/clientApi';
 import styles from './page.module.css';
 
 type Category = {
@@ -17,58 +18,123 @@ type Category = {
   category: string;
 };
 
-type StoriesListProps = {
-  initialStories: Story[];
-  initialCategory?: string;
-  initialCategories?: Category[];
-  categoriesError?: string | null;
-  initialPagination?: PaginationMeta;
-  mode?: 'all' | 'recommendations';
-};
+type StoriesListProps =
+  | {
+      mode?: 'listing';
+      initialStories: Story[];
+      initialCategory?: string;
+      initialCategories: Category[];
+      categoriesError: string | null;
+    }
+  | {
+      mode: 'recommendations';
+      initialStories: Story[];
+      initialCategory?: never;
+      initialCategories?: never;
+      categoriesError?: never;
+    };
 
-function getStoriesUrl(limit: number, page: number, category?: string) {
-  const params = new URLSearchParams({
-    limit: String(limit),
-    page: String(page),
-  });
-
-  if (category) {
-    params.set('category', category);
+function getErrorMessage(
+  error: unknown,
+  fallback = 'Сталася помилка. Спробуйте ще раз.'
+): string {
+  if (isAxiosError<{ message?: string }>(error)) {
+    return error.response?.data?.message || fallback;
   }
 
-  return `/api/stories?${params.toString()}`;
+  if (error instanceof Error) return error.message;
+  return fallback;
 }
 
-export default function StoriesList({
-  initialStories,
-  initialCategory,
-  initialCategories = [],
-  categoriesError = null,
-  initialPagination,
-  mode = 'all',
-}: StoriesListProps) {
-  const [stories, setStories] = useState(initialStories);
-  const categories = initialCategories;
-  const [pagination, setPagination] = useState(initialPagination);
-  const limit = pagination?.perPage ?? 9;
-  const page = pagination?.page ?? 1;
-  const hasMore = mode === 'all' && Boolean(pagination?.hasNextPage);
+export default function StoriesList(props: StoriesListProps) {
+  // PROPS SETUP
+  const { initialStories } = props;
+  const mode = props.mode ?? 'listing';
+  const isRecommendations = mode === 'recommendations';
+
+  const initialCategory = isRecommendations ? undefined : props.initialCategory;
+  const initialCategories = isRecommendations ? [] : props.initialCategories;
+  const categoriesError = isRecommendations ? null : props.categoriesError;
+
+  // ROUTER & TRANSITION
   const router = useRouter();
   const [isNavigating, startNavigation] = useTransition();
-  const listId = mode === 'all' ? 'stories-list' : 'recommended-stories-list';
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [paginationError, setPaginationError] = useState(false);
+  const listId = 'stories-list';
+
+  // STORIES
+  const [stories, setStories] = useState<Story[]>(initialStories);
+  const categories = isRecommendations ? [] : (props.initialCategories ?? []);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
+
+  // PAGINATION
+  const [limit, setLimit] = useState<8 | 9>(9);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(initialStories.length === 9);
+  const [paginationError, setPaginationError] = useState(false);
+
+  // LOADERS
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isSavingModalOpen, setIsSavingModalOpen] = useState(false);
   const { data: currentUser, refetch: refetchCurrentUser } = useCurrentUser();
   const loadingRef = useRef(false);
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchPage = useCallback(
+    async (targetPage: number, perPage: 8 | 9) => {
+      const response = await getStoriesClient({
+        categoryId: initialCategory,
+        page: targetPage,
+        perPage,
+      });
+
+      const pageStories = response.stories as Story[];
+      const more = pageStories.length === perPage;
+
+      return { pageStories, more };
+    },
+    [initialCategory]
+  );
+
+  useEffect(() => {
+    if (isRecommendations) return;
+    const desktop = window.matchMedia('(min-width: 1440px)');
+
+    const updateLimit = async (nextLimit: 8 | 9) => {
+      if (nextLimit === limit || loadingRef.current) return;
+
+      loadingRef.current = true;
+      setIsLoading(true);
+
+      try {
+        const { pageStories, more } = await fetchPage(1, nextLimit);
+        setStories(pageStories);
+        setLimit(nextLimit);
+        setPage(1);
+        setHasMore(more);
+        setPaginationError(false);
+        setError(null);
+      } catch (requestError) {
+        setError(getErrorMessage(requestError, 'Не вдалося завантажити історії'));
+      } finally {
+        loadingRef.current = false;
+        setIsLoading(false);
+      }
+    };
+
+    const handleChange = (event: MediaQueryList | MediaQueryListEvent) => {
+      void updateLimit(event.matches ? 9 : 8);
+    };
+
+    handleChange(desktop);
+    desktop.addEventListener('change', handleChange);
+
+    return () => desktop.removeEventListener('change', handleChange);
+  }, [isRecommendations, limit, fetchPage]);
 
   const loadNextPage = useCallback(async () => {
-    if (loadingRef.current || !hasMore) {
-      return;
-    }
+    if (loadingRef.current || !hasMore) return;
 
     loadingRef.current = true;
     setIsLoading(true);
@@ -77,31 +143,37 @@ export default function StoriesList({
 
     try {
       const nextPage = page + 1;
-      const response = await fetch(getStoriesUrl(limit, nextPage, initialCategory));
-      if (!response.ok) {
-        throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-      }
+      const { pageStories, more } = await fetchPage(nextPage, limit);
 
-      const result = parseStoriesResponse(await response.json());
-      const data = result.stories;
-
-      if (data.length > 0) {
-        setStories(currentStories => {
-          const existingIds = new Set(currentStories.map(story => story._id));
-          return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
-        });
-      }
-      setPagination(result.pagination);
+      setStories(current => {
+        const existingIds = new Set(current.map(story => story._id));
+        return [...current, ...pageStories.filter(story => !existingIds.has(story._id))];
+      });
+      setPage(nextPage);
+      setHasMore(more);
     } catch (requestError) {
       setPaginationError(true);
-      setError(
-        requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
-      );
+      setError(getErrorMessage(requestError, 'Не вдалося завантажити історії'));
     } finally {
       loadingRef.current = false;
       setIsLoading(false);
     }
-  }, [hasMore, limit, page, initialCategory]);
+  }, [hasMore, limit, page, fetchPage]);
+
+  useEffect(() => {
+    const node = endRef.current;
+    if (!node || !hasMore || paginationError) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0]?.isIntersecting) void loadNextPage();
+      },
+      { rootMargin: '300px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, paginationError, loadNextPage, stories.length]);
 
   const toggleFavorite = async (storyId: string) => {
     if (savingStoryId) return;
@@ -116,11 +188,7 @@ export default function StoriesList({
           if (userResult.error instanceof ApiError && userResult.error.status === 401) {
             setIsSavingModalOpen(true);
           } else {
-            toast.error(
-              userResult.error instanceof Error
-                ? userResult.error.message
-                : 'Не вдалося перевірити авторизацію'
-            );
+            toast.error(getErrorMessage(userResult.error, 'Не вдалося перевірити авторизацію'));
           }
           return;
         }
@@ -138,9 +206,7 @@ export default function StoriesList({
       const response = await fetch(`/api/users/saved-stories/${storyId}`, {
         method: shouldAdd ? 'POST' : 'DELETE',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) {
@@ -152,27 +218,19 @@ export default function StoriesList({
         throw new Error(payload?.message || 'Не вдалося оновити список улюблених');
       }
 
-      setFavoriteStoryIds(current => ({
-        ...current,
-        [storyId]: shouldAdd,
-      }));
+      setFavoriteStoryIds(current => ({ ...current, [storyId]: shouldAdd }));
 
       setStories(current =>
         current.map(story =>
           story._id === storyId
-            ? {
-                ...story,
-                rate: Math.max(0, story.rate + (shouldAdd ? 1 : -1)),
-              }
+            ? { ...story, rate: Math.max(0, story.rate + (shouldAdd ? 1 : -1)) }
             : story
         )
       );
 
       toast.success(shouldAdd ? 'Історію збережено' : 'Історію видалено зі збережених');
     } catch (requestError) {
-      toast.error(
-        requestError instanceof Error ? requestError.message : 'Не вдалося оновити список улюблених'
-      );
+      toast.error(getErrorMessage(requestError, 'Не вдалося оновити список улюблених'));
     } finally {
       setSavingStoryId(null);
     }
@@ -181,55 +239,67 @@ export default function StoriesList({
   const isStorySaved = (storyId: string) =>
     favoriteStoryIds[storyId] ?? currentUser?.savedArticles?.includes(storyId) ?? false;
 
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
-
   return (
     <>
-      {mode === 'all' && categoriesError && <p role="alert">{categoriesError}</p>}
-      {mode === 'all' && !categoriesError && categories.length > 0 && (
+      {mode === 'listing' && categoriesError && <p role="alert">{categoriesError}</p>}
+      {mode === 'listing' && !categoriesError && categories.length > 0 && (
         <>
-        <label className={styles.categorySelect}>
-          Категорії
-          <select value={initialCategory ?? ''} disabled={isLoading || isNavigating}
-            onChange={event => {
-              const category = event.target.value;
-              startNavigation(() => router.push(category ? `/stories?category=${encodeURIComponent(category)}` : '/stories'));
-            }}>
-            <option value="">Усі категорії</option>
-            {categories.map(category => <option key={category._id} value={category._id}>{category.category}</option>)}
-          </select>
-        </label>
-        <ul className={styles.categories} aria-label="Категорії статей">
-          <li className={!initialCategory ? styles.active : undefined}>
-            <Link href="/stories" aria-current={!initialCategory ? 'page' : undefined}>
-              Усі категорії
-            </Link>
-          </li>
-
-          {categories.map(category => {
-            const isActive = initialCategory === category._id;
-
-            return (
-              <li key={category._id} className={isActive ? styles.active : undefined}>
-                <Link
-                  href={`/stories?category=${encodeURIComponent(category._id)}`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
+          <label className={styles.categorySelect}>
+            Категорії
+            <select
+              value={initialCategory ?? ''}
+              disabled={isLoading || isNavigating}
+              onChange={event => {
+                const category = event.target.value;
+                startNavigation(() =>
+                  router.push(category ? `/stories?category=${encodeURIComponent(category)}` : '/stories')
+                );
+              }}
+            >
+              <option value="">Усі категорії</option>
+              {categories.map((category: Category) => (
+                <option key={category._id} value={category._id}>
                   {category.category}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                </option>
+              ))}
+            </select>
+          </label>
+          <ul className={styles.categories} aria-label="Категорії статей">
+            <li className={!initialCategory ? styles.active : undefined}>
+              <Link href="/stories" aria-current={!initialCategory ? 'page' : undefined}>
+                Усі категорії
+              </Link>
+            </li>
+
+            {categories.map((category: Category) => {
+              const isActive = initialCategory === category._id;
+
+              return (
+                <li key={category._id} className={isActive ? styles.active : undefined}>
+                  <Link
+                    href={`/stories?category=${encodeURIComponent(category._id)}`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {category.category}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </>
       )}
+
       <div className={styles.storiesContent}>
         {isNavigating && <p className={styles.status} role="status">Завантаження історій…</p>}
         {stories.length === 0 && !error && <p className={styles.empty}>Історій поки немає.</p>}
+
         {stories.length > 0 && (
-          <ul id={listId} className={`${styles.list} ${mode === 'recommendations' ? styles.recommendedList : ''}`} data-limit={limit} aria-busy={isLoading || isNavigating}>
+          <ul
+            id={listId}
+            className={`${styles.list} ${mode === 'recommendations' ? styles.recommendedList : ''}`}
+            data-limit={limit}
+            aria-busy={isLoading || isNavigating}
+          >
             {stories.map(story => (
               <li className={styles.item} id={`story-${story._id}`} key={story._id}>
                 <StoryCard
@@ -242,24 +312,35 @@ export default function StoriesList({
             ))}
           </ul>
         )}
-        {mode === 'all' && <Pagination
-          hasMore={hasMore}
-          isLoading={isLoading}
-          onLoadMore={loadNextPage}
-          controls={listId}
-          hasError={paginationError}
-        />}
+
+        <div ref={endRef} aria-hidden="true" />
+
+        {isLoading && <p className={styles.status}>Завантаження історій…</p>}
+
         {error && (
           <div className={styles.status} role="alert">
             <p>{error}</p>
-
+            {paginationError ? (
+              <button type="button" onClick={() => void loadNextPage()}>
+                Спробувати ще раз
+              </button>
+            ) : (
+              <button type="button" onClick={() => window.location.reload()}>
+                Оновити сторінку
+              </button>
+            )}
           </div>
         )}
-        {mode === 'all' && !hasMore && stories.length > 0 && (
+
+        {!hasMore && stories.length > 0 && (
           <p className={styles.status}>Ви переглянули всі історії.</p>
         )}
       </div>
-      {isSavingModalOpen && <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />}
+
+      <ErrorWhileSavingModal
+        isOpen={isSavingModalOpen}
+        onClose={() => setIsSavingModalOpen(false)}
+      />
     </>
   );
 }

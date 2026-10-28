@@ -1,0 +1,67 @@
+.toggleSwitch {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.themeToggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 58px;
+  height: 32px;
+  padding: 3px;
+  border: 1px solid var(--color-scheme-2-border);
+  border-radius: 999px;
+  background: #254c24;
+  cursor: pointer;
+  transition: background-color 250ms ease, border-color 250ms ease;
+}
+
+.toggleThumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #254c24;
+  background: #eef8ee;
+  transform: translateX(0);
+  transition: transform 250ms ease, color 250ms ease, background-color 250ms ease;
+}
+
+.toggleThumb svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
+.themeToggle.isDark {
+  background: #eef8ee;
+}
+
+.themeToggle.isDark .toggleThumb {
+  color: #eef8ee;
+  background: #254c24;
+  transform: translateX(25px);
+}
+
+.themeToggle:focus-visible {
+  outline: 2px solid var(--color-scheme-2-text);
+  outline-offset: 3px;
+}
+
+@media screen and (min-width: 768px) {
+  .toggleSwitch {
+    margin-right: 16px;
+  }
+}
+
+@media screen and (min-width: 1440px) {
+  .toggleSwitch {
+    margin-right: 26px;
+  }
+}

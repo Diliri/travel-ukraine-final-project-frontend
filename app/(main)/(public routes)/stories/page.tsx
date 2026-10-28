@@ -1,6 +1,6 @@
 import styles from './page.module.css';
 import StoriesList from './StoriesList';
-
+import type { Story } from '@/types/story';
 import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
 
 type Category = {
@@ -81,6 +81,7 @@ type StoriesPageProps = {
 export default async function StoriesPage({ searchParams }: StoriesPageProps) {
   const params = await searchParams;
   const selectedCategory = typeof params.category === 'string' ? params.category : undefined;
+  
   const [result, categoriesResult] = await Promise.all([
     getStories(9, selectedCategory).catch(() => null),
     getCategories().then(
@@ -101,21 +102,17 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
         <h1 id="stories-title">Статті</h1>
       </header>
 
-      {result ? <StoriesList
-        key={selectedCategory ?? 'all'}
-        initialStories={result.stories}
-        initialPagination={result.pagination}
-        initialCategory={selectedCategory}
-        initialCategories={categoriesResult.categories}
-        categoriesError={categoriesResult.error}
-      /> : (
-        <div className={styles.status} role="alert">
-          <p>Не вдалося завантажити історії. Спробуйте ще раз трохи пізніше.</p>
-          <form action="/stories" method="get">
-            {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
-            <button type="submit">Спробувати ще раз</button>
-          </form>
-        </div>
+      {result ? (
+        <StoriesList
+          key={selectedCategory ?? 'all'}
+          mode="listing"
+          initialStories={result.stories}
+          initialCategory={selectedCategory}
+          initialCategories={categoriesResult.categories}
+          categoriesError={categoriesResult.error}
+        />
+      ) : (
+        <p>Не вдалося завантажити статті.</p>
       )}
     </section>
   );

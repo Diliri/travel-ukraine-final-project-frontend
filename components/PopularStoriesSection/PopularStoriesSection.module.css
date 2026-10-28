@@ -1,29 +1,66 @@
-/* =========================================
-   POPULAR STORIES — MOBILE FIRST
-   ========================================= */
-
-.popularStories {
-    width: 100%;
-    min-height: 895px;
-    padding: 64px 20px;
-    background-color: #eef8ee;
-    box-sizing: border-box;
+.section {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  color: var(--color-scheme-2-text);
 }
 
-.container {
-    width: 100%;
-    max-width: 335px;
-    margin: 0 auto;
-}
 .title {
-    width: 100%;
-    margin: 0;
+  margin: 0 0 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
 
-    font-family: "Montserrat", sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+.list {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
 
-    color: #000000;
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.list > * {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.message {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 40px;
+}
+@media (min-width: 768px) {
+  .section {
+    padding: 64px 32px;
+  }
+
+  .title {
+    margin-bottom: 32px;
+  }
+
+  .list > * {
+    flex-basis: calc((100% - 24px) / 2);
+  }
+}
+
+@media (min-width: 1200px) {
+  .list > * {
+    flex-basis: calc((100% - 48px) / 3);
+  }
+  .controls {
+    display: none;
+  }
 }
