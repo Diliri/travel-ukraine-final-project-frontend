@@ -1,26 +1,20 @@
-"use client";
+import { User } from '@/lib/api/clientApi';
+import { create } from 'zustand';
 
-import { create } from "zustand";
-import type { User } from "@/types/user";
-
-type AuthState = {
-  user: User | null;
+type AuthStore = {
   isAuthenticated: boolean;
-  setUser: (user: User | null) => void;
-  clearUser: () => void;
+  user: User | null;
+  setUser: (user: User) => void;
+  clearIsAuth: () => void;
 };
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+export const useAuthStore = create<AuthStore>((set) => ({
   isAuthenticated: false,
-  setUser: (user) =>
-    set({
-      user,
-      isAuthenticated: Boolean(user),
-    }),
-  clearUser: () =>
-    set({
-      user: null,
-      isAuthenticated: false,
-    }),
+  user: null,
+  setUser: (user: User) => {
+    set(() => ({ user, isAuthenticated: true }));
+  },
+  clearIsAuth: () => {
+    set(() => ({ user: null, isAuthenticated: false }));
+  },
 }));
