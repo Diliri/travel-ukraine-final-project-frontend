@@ -1,17 +1,9 @@
-export async function GET(request: Request) {
-  const backendUrl =
-    process.env.BACKEND_URL?.trim() || 'http://localhost:4000';
+import { NextRequest } from 'next/server';
+import { proxyToBackend } from '@/app/api/_utils/utils';
 
-  const url = new URL('/api/stories/popular', backendUrl);
-  url.search = new URL(request.url).search;
-
-  const response = await fetch(url, { cache: 'no-store' });
-
-  return new Response(response.body, {
-    status: response.status,
-    headers: {
-      'Content-Type':
-        response.headers.get('Content-Type') ?? 'application/json',
-    },
+// GET /api/stories/popular?page=1&perPage=10  →  бекенд GET /api/stories/popular
+export async function GET(request: NextRequest) {
+  return proxyToBackend(request, '/api/stories/popular', {
+    query: ['page', 'perPage', 'category'],
   });
 }

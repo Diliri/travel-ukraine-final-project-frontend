@@ -4,12 +4,12 @@ import "modern-normalize/modern-normalize.css";
 import "izitoast/dist/css/iziToast.min.css";
 import "./globals.css";
 
-import QueryProvider from "./providers/QueryProvider";
-import ToastProvider from "@/components/ToastProvider/ToastProvider";
-// import AuthNavModal from '@/components/AuthNavModal/AuthNavModal';
-// import { Providers } from './providers/ThemeProvider';
-// import Header from "@/components/Header/Header";
-//
+import TanStackProvider from '@/components/TanStackProvider';
+import AuthProvider from '@/components/AuthProvider';
+import Cursor from '@/components/Cursor';
+import { ThemeProvider } from '@/components/ThemeContext/ThemeContext';
+import ToastProvider from '@/components/ToastProvider/ToastProvider';
+
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   weight: ["400", "500", "600", "700"],
@@ -60,14 +60,16 @@ export default function RootLayout({
   return (
     <html lang="uk" suppressHydrationWarning>
       <body className={`${montserrat.variable}`}>
-        <QueryProvider>
-          {/* <Providers>{children}</Providers> функція на день-ніч тему*/}
-          {/* <Header /> в мейн лейаут*/}
-          {children}
-          <ToastProvider />
-          {/* <AuthNavModal /> */}
-          <div id="modal-root" />
-        </QueryProvider>
+        <TanStackProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <Cursor />
+              {children}
+              <ToastProvider />
+              <div id="modal-root" />
+            </ThemeProvider>
+          </AuthProvider>
+        </TanStackProvider>
       </body>
     </html>
   );

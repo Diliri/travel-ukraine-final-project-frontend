@@ -2,12 +2,13 @@ import { NextRequest } from 'next/server';
 import { parseStoriesResponse } from '@/lib/api/storiesResponse';
 
 export async function GET(request: NextRequest) {
-  const limit = request.nextUrl.searchParams.get('limit') ?? '9';
-  const page = request.nextUrl.searchParams.get('page') ?? '1';
-  const category = request.nextUrl.searchParams.get('category');
-
-  if (!['8', '9'].includes(limit)) {
-    return Response.json({ message: 'limit must be 8 or 9' }, { status: 400 });
+  const params = request.nextUrl.searchParams;
+  const perPage = params.get('perPage') ?? params.get('limit') ?? '9';
+  const page = params.get('page') ?? '1';
+  const categoryId = params.get('categoryId') ?? params.get('category');
+  const type = params.get('type');
+  if (!['8', '9'].includes(perPage)) {
+    return Response.json({ message: 'perPage must be 8 or 9' }, { status: 400 });
   }
 
   if (!/^[1-9]\d*$/.test(page)) {
@@ -31,13 +32,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  storiesUrl.searchParams.set('perPage', limit);
+  storiesUrl.searchParams.set('perPage', perPage);
   storiesUrl.searchParams.set('page', page);
-  if (category) {
-    storiesUrl.searchParams.set('category', category);
-  }
-  const response = await fetch(storiesUrl, { cache: 'no-store' });
+  if (categoryId) storiesUrl.searchParams.set('categoryId', categoryId);
+  if (type) storiesUrl.searchParams.set('type', type);
 
+  const response = await fetch(storiesUrl, { cache: 'no-store' });
   if (!response.ok) {
     return new Response(response.body, {
       status: response.status,
@@ -47,13 +47,18 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  try {
-    return Response.json(parseStoriesResponse(await response.json()));
-  } catch {
-    return Response.json(
-      { message: 'Backend returned an invalid stories response' },
-      { status: 502 },
-    );
-  }
+  const payload: unknown = await response.json();
+  if (
+  typeof payload !== 'object' ||
+  payload === null ||
+  !('stories' in payload) ||
+  !Array.isArray(payload.stories)
+) {
+  return Response.json(
+    { message: 'Backend returned an invalid stories response' },
+    { status: 502 },
+  );
+}
 
+  return Response.json(payload);
 }
