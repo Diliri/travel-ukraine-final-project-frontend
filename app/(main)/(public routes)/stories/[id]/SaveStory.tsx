@@ -12,7 +12,7 @@ export default function SaveStory({ storyId }: { storyId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const pending = useRef(false);
   const dialog = useRef<HTMLDialogElement>(null);
-  const saved = savedOverride ?? user?.savedArticles.includes(storyId) ?? false;
+  const saved = savedOverride ?? user?.savedArticles?.includes(storyId) ?? false;
 
   useEffect(() => {
     const controller = new AbortController();
