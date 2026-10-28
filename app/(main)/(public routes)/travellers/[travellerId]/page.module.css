@@ -18,9 +18,9 @@
     list-style: none;
 }
 
-.item a {
-    color: var(--color-mantis-darkest);
-    text-decoration: underline;
+/* на мобильном и планшете показываем 4 статьи, на десктопе 6 */
+.item:nth-child(n + 5) {
+    display: none;
 }
 
 @media (min-width: 768px) {
@@ -39,7 +39,7 @@
 
 @media (min-width: 1440px) {
     .section {
-        padding: 64px 228px 96px;
+        padding: 64px 64px 96px;
     }
 
     .title {
@@ -48,5 +48,9 @@
 
     .list {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .item:nth-child(n + 5) {
+        display: block;
     }
 }
