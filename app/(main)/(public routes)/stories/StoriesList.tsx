@@ -53,7 +53,7 @@ export default function StoriesList(props: StoriesListProps) {
   const isRecommendations = mode === 'recommendations';
 
   const initialCategory = isRecommendations ? undefined : props.initialCategory;
-  const initialCategories = isRecommendations ? [] : props.initialCategories;
+//  const initialCategories = isRecommendations ? [] : props.initialCategories;
   const categoriesError = isRecommendations ? null : props.categoriesError;
 
   // ROUTER & TRANSITION

@@ -1,6 +1,6 @@
 import styles from './page.module.css';
 import StoriesList from './StoriesList';
-import type { Story } from '@/types/story';
+//import type { Story } from '@/types/story';
 import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
 
 type Category = {
