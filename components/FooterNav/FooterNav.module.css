@@ -25,8 +25,8 @@
 
 .link:hover,
 .link:focus-visible {
-  color: var(--color-neutral-darkest);
-  border: 1px solid var(--color-scheme-1-text);
+
+  border: 1px solid var(--color-scheme-2-text);
 }
 
 .link:disabled {
