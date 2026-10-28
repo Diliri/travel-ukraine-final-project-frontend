@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import serverApi, { ServerApiError }  from '@/app/api/api';
 
-import { UsersHttpResponse } from '@/lib/api/clientApi';
+//import { UsersHttpResponse } from '@/lib/api/clientApi';
+import type { TravellersResponse as UsersHttpResponse } from '@/types/travellers';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
