@@ -1,0 +1,126 @@
+.section {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 48px 16px 64px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-mantis-darkest);
+}
+
+.all {
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 6px 24px;
+    border-radius: 6px;
+    background: var(--color-mantis-dark);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--color-white);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.all:hover {
+    background: var(--color-mantis-darkest);
+}
+
+.allTop {
+    display: none;
+}
+
+.allBottom {
+    display: flex;
+    width: 100%;
+    margin-top: 32px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 0;
+    list-style: none;
+}
+
+.arrows {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-mantis-dark);
+    border-radius: 6px;
+    background: var(--color-mantis-lighter);
+    color: var(--color-mantis-darkest);
+    cursor: pointer;
+    transition:
+        background-color 0.2s,
+        color 0.2s;
+}
+
+.arrow:hover:not(:disabled) {
+    background: var(--color-mantis-dark);
+    color: var(--color-white);
+}
+
+.arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+    .section {
+        padding: 64px 32px 80px;
+    }
+
+    .title {
+        font-size: 36px;
+    }
+
+    .allTop {
+        display: inline-flex;
+    }
+
+    .allBottom {
+        display: none;
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1440px) {
+    .section {
+        padding: 80px 64px 96px;
+    }
+
+    .title {
+        font-size: 48px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(4, 310px);
+        justify-content: center;
+    }
+}

@@ -1,19 +1,11 @@
 import MessageNoStories from '@/components/MessageNoStories/MessageNoStories';
 import TravellerInfo from '@/components/TravellerInfo/TravellerInfo';
-import Link from 'next/link';
+import TravellerStoryCard, {
+  type TravellerStory,
+} from '@/components/TravellerStoryCard/TravellerStoryCard';
 import css from './page.module.css';
 
 const API_URL = `${process.env.BACKEND_URL?.trim() || 'http://localhost:4000'}/api`;
-
-
-interface Story {
-  _id: string;
-  title: string;
-  img: string;
-  rate: number;
-  author?: string;
-  date?: string;
-}
 
 interface TravellerResponse {
   profile: {
@@ -22,11 +14,11 @@ interface TravellerResponse {
     avatarUrl?: string;
     articlesAmount: number;
   };
-  articles: Story[];
+  articles: TravellerStory[];
 }
 
 async function getTraveller(id: string): Promise<TravellerResponse | null> {
-  const res = await fetch(`${API_URL}/users/${id}?page=1&perPage=6`, {
+  const res = await fetch(`${API_URL}/users/${id}?page=1&limit=6`, {
     cache: 'no-store',
   });
   if (!res.ok) return null;
@@ -63,7 +55,7 @@ export default async function TravellerPage({
         <ul className={css.list}>
           {data.articles.map((story) => (
             <li className={css.item} key={story._id}>
-              <Link href={`/stories/${story._id}`}>{story.title}</Link>
+              <TravellerStoryCard story={story} authorName={data.profile.name} />
             </li>
           ))}
         </ul>

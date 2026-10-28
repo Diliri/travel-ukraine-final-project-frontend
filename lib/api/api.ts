@@ -1,12 +1,7 @@
-import axios from "axios";
-
 // Клієнтський axios → Next.js Route Handlers (/app/api)
-const api = axios.create({
-  baseURL: "/api",
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+import axios from 'axios';
 
-export default api;
+export const nextServer = axios.create({
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
+  withCredentials: true,
+});

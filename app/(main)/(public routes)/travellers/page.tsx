@@ -56,33 +56,9 @@ async function getTravellers(): Promise<Traveller[]> {
   if (!res.ok) throw new Error('Не вдалося завантажити мандрівників');
 
   const payload: unknown = await res.json();
-  const travellers =
-    typeof payload === 'object' &&
-    payload !== null &&
-    'travellers' in payload &&
-    Array.isArray(payload.travellers)
-      ? payload.travellers
-      : null;
-
-  if (
-    !Array.isArray(travellers) ||
-    !travellers.every(
-      (traveller): traveller is Traveller =>
-        typeof traveller === 'object' &&
-        traveller !== null &&
-        '_id' in traveller &&
-        typeof traveller._id === 'string' &&
-        'name' in traveller &&
-        typeof traveller.name === 'string' &&
-        'articlesAmount' in traveller &&
-        typeof traveller.articlesAmount === 'number',
-    )
-  ) {
-    throw new Error('Сервер повернув некоректний список мандрівників');
-  }
-
-  return travellers;
+  return parseTravellerPage(payload).travellers;
 }
+
 
 export default async function TravellersPage() {
   const all = await getTravellers();
