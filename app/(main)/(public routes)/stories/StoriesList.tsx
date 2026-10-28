@@ -1,19 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import Pagination from '@/components/Pagination/Pagination';
+import { parseStoriesResponse, type Story, type PaginationMeta } from '@/lib/api/storiesResponse';
 import toast from 'react-hot-toast';
 import ErrorWhileSavingModal from '@/components/ErrorWhileSavingModal/ErrorWhileSavingModal';
-import StoryCard, { type StoryCardData } from '@/components/StoryCard/StoryCard';
+import StoryCard from '@/components/StoryCard/StoryCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiError } from '@/lib/api/profileApi';
 import styles from './page.module.css';
-
-type Story = StoryCardData & {
-  desc?: string;
-  article?: string;
-  date?: string;
-};
 
 type Category = {
   _id: string;
@@ -23,11 +20,13 @@ type Category = {
 type StoriesListProps = {
   initialStories: Story[];
   initialCategory?: string;
-  initialCategories: Category[];
-  categoriesError: string | null;
+  initialCategories?: Category[];
+  categoriesError?: string | null;
+  initialPagination?: PaginationMeta;
+  mode?: 'all' | 'recommendations';
 };
 
-function getStoriesUrl(limit: 8 | 9, page: number, category?: string) {
+function getStoriesUrl(limit: number, page: number, category?: string) {
   const params = new URLSearchParams({
     limit: String(limit),
     page: String(page),
@@ -40,94 +39,31 @@ function getStoriesUrl(limit: 8 | 9, page: number, category?: string) {
   return `/api/stories?${params.toString()}`;
 }
 
-function isStory(value: unknown): value is Story {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_id' in value &&
-    typeof value._id === 'string' &&
-    'img' in value &&
-    typeof value.img === 'string' &&
-    'title' in value &&
-    typeof value.title === 'string' &&
-    'rate' in value &&
-    typeof value.rate === 'number' &&
-    (!('desc' in value) || typeof value.desc === 'string') &&
-    (!('article' in value) || typeof value.article === 'string') &&
-    (!('author' in value) || typeof value.author === 'string') &&
-    (!('date' in value) || typeof value.date === 'string')
-  );
-}
-
 export default function StoriesList({
   initialStories,
   initialCategory,
-  initialCategories,
-  categoriesError,
+  initialCategories = [],
+  categoriesError = null,
+  initialPagination,
+  mode = 'all',
 }: StoriesListProps) {
   const [stories, setStories] = useState(initialStories);
   const categories = initialCategories;
-  const [limit, setLimit] = useState<8 | 9>(9);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(initialStories.length === 9);
+  const [pagination, setPagination] = useState(initialPagination);
+  const limit = pagination?.perPage ?? 9;
+  const page = pagination?.page ?? 1;
+  const hasMore = mode === 'all' && Boolean(pagination?.hasNextPage);
+  const router = useRouter();
+  const [isNavigating, startNavigation] = useTransition();
+  const listId = mode === 'all' ? 'stories-list' : 'recommended-stories-list';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paginationError, setPaginationError] = useState(false);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
   const [isSavingModalOpen, setIsSavingModalOpen] = useState(false);
   const { data: currentUser, refetch: refetchCurrentUser } = useCurrentUser();
   const loadingRef = useRef(false);
-  const endRef = useRef<HTMLDivElement>(null);
-  const pendingScrollId = useRef<string | null>(null);
-
-  useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 1440px)');
-
-    const updateLimit = async (nextLimit: 8 | 9) => {
-      if (nextLimit === limit || loadingRef.current) {
-        return;
-      }
-
-      loadingRef.current = true;
-      setIsLoading(true);
-
-      try {
-        const response = await fetch(getStoriesUrl(nextLimit, 1, initialCategory));
-        if (!response.ok) {
-          throw new Error(`Не вдалося завантажити історії: ${response.status}`);
-        }
-
-        const data: unknown = await response.json();
-        if (!Array.isArray(data) || !data.every(isStory)) {
-          throw new Error('Сервер повернув некоректний список історій');
-        }
-
-        setStories(data);
-        setLimit(nextLimit);
-        setPage(1);
-        setHasMore(data.length === nextLimit);
-        setError(null);
-      } catch (requestError) {
-        setError(
-          requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
-        );
-      } finally {
-        loadingRef.current = false;
-        setIsLoading(false);
-      }
-    };
-
-    const handleChange = (event: MediaQueryList | MediaQueryListEvent) => {
-      void updateLimit(event.matches ? 9 : 8);
-    };
-
-    if ((desktop.matches ? 9 : 8) !== limit) {
-      handleChange(desktop);
-    }
-    desktop.addEventListener('change', handleChange);
-
-    return () => desktop.removeEventListener('change', handleChange);
-  }, [limit, initialCategory]);
 
   const loadNextPage = useCallback(async () => {
     if (loadingRef.current || !hasMore) {
@@ -137,6 +73,7 @@ export default function StoriesList({
     loadingRef.current = true;
     setIsLoading(true);
     setError(null);
+    setPaginationError(false);
 
     try {
       const nextPage = page + 1;
@@ -145,18 +82,18 @@ export default function StoriesList({
         throw new Error(`Не вдалося завантажити історії: ${response.status}`);
       }
 
-      const data: unknown = await response.json();
-      if (!Array.isArray(data) || !data.every(isStory)) {
-        throw new Error('Сервер повернув некоректний список історій');
-      }
+      const result = parseStoriesResponse(await response.json());
+      const data = result.stories;
 
       if (data.length > 0) {
-        pendingScrollId.current = data[0]._id;
-        setStories(currentStories => [...currentStories, ...data]);
-        setPage(nextPage);
+        setStories(currentStories => {
+          const existingIds = new Set(currentStories.map(story => story._id));
+          return [...currentStories, ...data.filter(story => !existingIds.has(story._id))];
+        });
       }
-      setHasMore(data.length === limit);
+      setPagination(result.pagination);
     } catch (requestError) {
+      setPaginationError(true);
       setError(
         requestError instanceof Error ? requestError.message : 'Не вдалося завантажити історії'
       );
@@ -165,38 +102,6 @@ export default function StoriesList({
       setIsLoading(false);
     }
   }, [hasMore, limit, page, initialCategory]);
-
-  useEffect(() => {
-    const endElement = endRef.current;
-    if (!endElement || !hasMore || error) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          void loadNextPage();
-        }
-      },
-      { rootMargin: '10px' }
-    );
-
-    observer.observe(endElement);
-    return () => observer.disconnect();
-  }, [error, hasMore, loadNextPage]);
-
-  useEffect(() => {
-    const storyId = pendingScrollId.current;
-    if (!storyId) {
-      return;
-    }
-
-    pendingScrollId.current = null;
-    document.getElementById(`story-${storyId}`)?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }, [stories]);
 
   const toggleFavorite = async (storyId: string) => {
     if (savingStoryId) return;
@@ -214,7 +119,7 @@ export default function StoriesList({
             toast.error(
               userResult.error instanceof Error
                 ? userResult.error.message
-                : 'Не вдалося перевірити авторизацію',
+                : 'Не вдалося перевірити авторизацію'
             );
           }
           return;
@@ -228,10 +133,9 @@ export default function StoriesList({
         return;
       }
 
-      const isSaved =
-        favoriteStoryIds[storyId] ?? user.savedArticles?.includes(storyId) ?? false;
+      const isSaved = favoriteStoryIds[storyId] ?? user.savedArticles?.includes(storyId) ?? false;
       const shouldAdd = !isSaved;
-      const response = await fetch(`/api/stories/${storyId}/favorite`, {
+      const response = await fetch(`/api/users/saved-stories/${storyId}`, {
         method: shouldAdd ? 'POST' : 'DELETE',
         credentials: 'include',
         headers: {
@@ -240,9 +144,7 @@ export default function StoriesList({
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { message?: string }
-          | null;
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null;
         if (response.status === 401) {
           setIsSavingModalOpen(true);
           return;
@@ -254,12 +156,22 @@ export default function StoriesList({
         ...current,
         [storyId]: shouldAdd,
       }));
+
+      setStories(current =>
+        current.map(story =>
+          story._id === storyId
+            ? {
+                ...story,
+                rate: Math.max(0, story.rate + (shouldAdd ? 1 : -1)),
+              }
+            : story
+        )
+      );
+
       toast.success(shouldAdd ? 'Історію збережено' : 'Історію видалено зі збережених');
     } catch (requestError) {
       toast.error(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Не вдалося оновити список улюблених',
+        requestError instanceof Error ? requestError.message : 'Не вдалося оновити список улюблених'
       );
     } finally {
       setSavingStoryId(null);
@@ -267,18 +179,28 @@ export default function StoriesList({
   };
 
   const isStorySaved = (storyId: string) =>
-    favoriteStoryIds[storyId] ??
-    currentUser?.savedArticles?.includes(storyId) ??
-    false;
+    favoriteStoryIds[storyId] ?? currentUser?.savedArticles?.includes(storyId) ?? false;
 
-  if (stories.length === 0 && !error) {
-    return <p className={styles.empty}>Історій поки немає.</p>;
-  }
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
 
   return (
     <>
-      {categoriesError && <p role="alert">{categoriesError}</p>}
-      {!categoriesError && categories.length > 0 && (
+      {mode === 'all' && categoriesError && <p role="alert">{categoriesError}</p>}
+      {mode === 'all' && !categoriesError && categories.length > 0 && (
+        <>
+        <label className={styles.categorySelect}>
+          Категорії
+          <select value={initialCategory ?? ''} disabled={isLoading || isNavigating}
+            onChange={event => {
+              const category = event.target.value;
+              startNavigation(() => router.push(category ? `/stories?category=${encodeURIComponent(category)}` : '/stories'));
+            }}>
+            <option value="">Усі категорії</option>
+            {categories.map(category => <option key={category._id} value={category._id}>{category.category}</option>)}
+          </select>
+        </label>
         <ul className={styles.categories} aria-label="Категорії статей">
           <li className={!initialCategory ? styles.active : undefined}>
             <Link href="/stories" aria-current={!initialCategory ? 'page' : undefined}>
@@ -301,40 +223,43 @@ export default function StoriesList({
             );
           })}
         </ul>
+        </>
       )}
       <div className={styles.storiesContent}>
+        {isNavigating && <p className={styles.status} role="status">Завантаження історій…</p>}
         {stories.length === 0 && !error && <p className={styles.empty}>Історій поки немає.</p>}
         {stories.length > 0 && (
-          <ul className={styles.list} data-limit={limit}>
+          <ul id={listId} className={`${styles.list} ${mode === 'recommendations' ? styles.recommendedList : ''}`} data-limit={limit} aria-busy={isLoading || isNavigating}>
             {stories.map(story => (
               <li className={styles.item} id={`story-${story._id}`} key={story._id}>
                 <StoryCard
-                  story={story}
+                  story={{ ...story, ownerId: story.ownerId ?? undefined }}
                   isSaved={isStorySaved(story._id)}
                   isSaving={savingStoryId === story._id}
                   onToggleSaved={storyId => void toggleFavorite(storyId)}
                 />
-            </li>
-          ))}
-        </ul>
-      )}
-      <div ref={endRef} aria-hidden="true" />
-      {isLoading && <p className={styles.status}>Завантаження історій…</p>}
-      {error && (
-        <div className={styles.status} role="alert">
-          <p>{error}</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            Оновити сторінку
-          </button>
-        </div>
-      )}
-      {!hasMore && stories.length > 0 && (
-        <p className={styles.status}>Ви переглянули всі історії.</p>
-      )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {mode === 'all' && <Pagination
+          hasMore={hasMore}
+          isLoading={isLoading}
+          onLoadMore={loadNextPage}
+          controls={listId}
+          hasError={paginationError}
+        />}
+        {error && (
+          <div className={styles.status} role="alert">
+            <p>{error}</p>
+
+          </div>
+        )}
+        {mode === 'all' && !hasMore && stories.length > 0 && (
+          <p className={styles.status}>Ви переглянули всі історії.</p>
+        )}
       </div>
-      {isSavingModalOpen && (
-        <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />
-      )}
+      {isSavingModalOpen && <ErrorWhileSavingModal onClose={() => setIsSavingModalOpen(false)} />}
     </>
   );
 }

@@ -11,33 +11,29 @@ import type {
 
 /* ---------------- AUTH ---------------- */
 
-export type RegisterPayload = {
+export type RegisterRequest = {
   name: string;
   email: string;
   password: string;
 };
 
-export type RegisterRequest = RegisterPayload;
-
 export type RegisterResponse = {
   user: User;
 };
 
-export type LoginPayload = {
-  email: string;
-  password: string;
-};
-
-export type LoginRequest = LoginPayload;
-
 export async function register(
-  payload: RegisterPayload,
+  payload: RegisterRequest,
 ): Promise<RegisterResponse | User> {
   const response = await api.post('/auth/register', payload);
   return response.data;
 }
 
-export const login = async (payload: LoginPayload): Promise<User> => {
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export const login = async (payload: LoginRequest): Promise<User> => {
   const res = await api.post<User>('/auth/login', payload);
   return res.data;
 };

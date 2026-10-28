@@ -1,16 +1,46 @@
 'use client';
 
+import { useEffect } from 'react';
 import styles from './ConfirmModal.module.css';
 
 type ConfirmModalProps = {
+  title?: string;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
 };
 
-export default function ConfirmModal({ onConfirm, onCancel, loading = false }: ConfirmModalProps) {
+export default function ConfirmModal({
+  title = 'Ви точно хочете вийти?',
+  confirmButtonText = 'Вийти',
+  cancelButtonText = 'Відмінити',
+  onConfirm,
+  onCancel,
+  loading = false,
+}: ConfirmModalProps) {
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape' && !loading) {
+        onCancel();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onCancel, loading]);
+
   return (
-    <div className={styles.overlay} onClick={onCancel}>
+    <div
+      className={styles.overlay}
+      onClick={() => {
+        if (!loading) onCancel();
+      }}
+    >
       <div
         className={styles.modal}
         role="dialog"
@@ -22,20 +52,21 @@ export default function ConfirmModal({ onConfirm, onCancel, loading = false }: C
           type="button"
           className={styles.closeButton}
           onClick={onCancel}
+          disabled={loading}
           aria-label="Закрити вікно"
         >
           ×
         </button>
 
-        <h2 id="logout-title">Ви точно хочете вийти?</h2>
+        <h2 id="logout-title">{title}</h2>
         <p>Ми будемо сумувати за вами!</p>
 
         <div className={styles.actions}>
-          <button onClick={onCancel} disabled={loading}>
-            Відмінити
+          <button type="button" onClick={onCancel} disabled={loading}>
+            {cancelButtonText}
           </button>
-          <button onClick={onConfirm} disabled={loading}>
-            {loading ? 'Вихід...' : 'Вийти'}
+          <button type="button" onClick={onConfirm} disabled={loading}>
+            {loading ? 'Вихід...' : confirmButtonText}
           </button>
         </div>
       </div>

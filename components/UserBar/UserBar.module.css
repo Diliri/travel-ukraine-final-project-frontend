@@ -1,0 +1,42 @@
+.userBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userName {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: currentColor;
+  opacity: 0.2;
+}
+
+.logoutButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.logoutIcon {
+  display: block;
+  transition: filter 0.3s ease;
+}
+
+:global(.dark) .logoutIcon {
+  filter: invert(1) brightness(1.5);
+}

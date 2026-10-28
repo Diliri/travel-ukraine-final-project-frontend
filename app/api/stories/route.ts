@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { parseStoriesResponse } from '@/lib/api/storiesResponse';
 
 export async function GET(request: NextRequest) {
   const limit = request.nextUrl.searchParams.get('limit') ?? '9';
@@ -46,21 +47,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const payload: unknown = await response.json();
-  const stories =
-    typeof payload === 'object' &&
-    payload !== null &&
-    'stories' in payload &&
-    Array.isArray(payload.stories)
-      ? payload.stories
-      : null;
-
-  if (!stories) {
+  try {
+    return Response.json(parseStoriesResponse(await response.json()));
+  } catch {
     return Response.json(
       { message: 'Backend returned an invalid stories response' },
       { status: 502 },
     );
   }
 
-  return Response.json(stories);
 }
