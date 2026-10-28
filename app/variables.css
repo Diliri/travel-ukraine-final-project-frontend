@@ -1,5 +1,8 @@
 :root {
-  --font-family: var(--font-montserrat), sans-serif;
+  --font-family: "Montserrat", sans-serif;
+  
+  --color-text: var(--color-neutral-darker);
+
   --color-scheme-1-background: var(--color-white);
   --color-neutral-darkest: #000;
   --color-scheme-1-border: var(--opacity-neutral-darkest-15);
@@ -14,6 +17,7 @@
   --opacity-transparent: rgba(255, 255, 255, 0);
   --color-scheme-1-foreground: var(--color-neutral-lightest);
   --color-scheme-1-accent: var(--color-mantis);
+  
   --opacity-white-5: rgba(255, 255, 255, 0.05);
   --opacity-white-10: rgba(255, 255, 255, 0.1);
   --opacity-white-15: rgba(255, 255, 255, 0.15);
@@ -22,6 +26,7 @@
   --opacity-white-40: rgba(255, 255, 255, 0.4);
   --opacity-white-50: rgba(255, 255, 255, 0.5);
   --opacity-white-60: rgba(255, 255, 255, 0.6);
+  
   --opacity-neutral-darkest-5: rgba(0, 0, 0, 0.05);
   --opacity-neutral-darkest-10: rgba(0, 0, 0, 0.1);
   --opacity-neutral-darkest-15: rgba(0, 0, 0, 0.15);
@@ -30,6 +35,7 @@
   --opacity-neutral-darkest-40: rgba(0, 0, 0, 0.4);
   --opacity-neutral-darkest-50: rgba(0, 0, 0, 0.5);
   --opacity-neutral-darkest-60: rgba(0, 0, 0, 0.6);
+  
   --color-mantis-lightest: #eef8ee;
   --color-mantis-lighter: #def2de;
   --color-mantis-light: #8dd18c;
@@ -37,14 +43,11 @@
   --color-mantis-dark: #4a9849;
   --color-mantis-darker: #254c24;
   --color-mantis-darkest: #1b391b;
+  
   --color-scheme-2-text: var(--color-mantis-darkest);
   --color-scheme-2-background: var(--color-mantis-lightest);
   --color-scheme-2-border: var(--opacity-neutral-darkest-15);
   --color-scheme-2-accent: var(--color-mantis);
   --color-scheme-2-foreground: var(--color-mantis-lighter);
   --color-red: #b00101;
-}
-
-:root {
-  --font-family: "Montserrat", sans-serif;
 }

@@ -3,15 +3,12 @@
 *,
 *::before,
 *::after {
+  box-sizing: border-box;
   transition:
     background-color 0.5s ease,
     color 0.5s ease,
     border-color 0.5s ease,
     box-shadow 0.5s ease;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 html,
@@ -198,4 +195,31 @@ select:focus {
   p {
     font-size: 20px;
   }
+}
+
+/* 
+  Оновлений клас .dark, який базується на змінних 
+  і коректно змінює колірну схему темної теми.
+*/
+.dark {
+  --color-text: var(--color-mantis-lightest);
+  
+  /* Scheme 2 (темна тема для фону сторінки) */
+  --color-scheme-2-background: var(--color-mantis-darker);
+  --color-scheme-2-text: var(--color-mantis-lightest);
+  --color-scheme-2-foreground: var(--color-mantis-darkest);
+  --color-scheme-2-border: var(--color-mantis-lighter);
+  --color-scheme-2-accent: var(--color-mantis-light);
+
+  /* Scheme 1 (якщо використовується альтернативна схема всередині темної теми) */
+  --color-scheme-1-background: var(--color-mantis-darkest);
+  --color-scheme-1-text: var(--color-mantis-lightest);
+  --color-scheme-1-border: var(--color-mantis-lighter);
+  --color-scheme-1-foreground: var(--color-mantis-darker);
+  --color-scheme-1-accent: var(--color-mantis-light);
+
+  
+  --opacity-neutral-darkest-5: var(--color-mantis-darker);
+  --opacity-neutral-darkest-60: var(--color-mantis-lighter);
+  --color-error: var(--color-white);
 }
