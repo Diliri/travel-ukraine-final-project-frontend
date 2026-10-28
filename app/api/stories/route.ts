@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { parseStoriesResponse } from '@/lib/api/storiesResponse';
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;

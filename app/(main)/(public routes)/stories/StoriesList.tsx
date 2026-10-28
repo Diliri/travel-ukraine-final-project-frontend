@@ -1,21 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { type Story } from '@/lib/api/storiesResponse';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import ErrorWhileSavingModal from '@/components/ErrorWhileSavingModal/ErrorWhileSavingModal';
-import StoryCard, { type StoryCardData } from '@/components/StoryCard/StoryCard';
+import StoryCard from '@/components/StoryCard/StoryCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiError } from '@/lib/api/profileApi';
 import { getStoriesClient } from '@/lib/api/clientApi';
 import styles from './page.module.css';
-
-type Story = StoryCardData & {
-  desc?: string;
-  article?: string;
-  date?: string;
-};
 
 type Category = {
   _id: string;
@@ -33,31 +29,41 @@ type StoriesListProps =
   | {
       mode: 'recommendations';
       initialStories: Story[];
+      initialCategory?: never;
+      initialCategories?: never;
+      categoriesError?: never;
     };
 
 function getErrorMessage(
   error: unknown,
-  fallback = 'Сталася помилка. Спробуйте ще раз.'): string {
+  fallback = 'Сталася помилка. Спробуйте ще раз.'
+): string {
   if (isAxiosError<{ message?: string }>(error)) {
     return error.response?.data?.message || fallback;
   }
 
   if (error instanceof Error) return error.message;
   return fallback;
-};
+}
 
 export default function StoriesList(props: StoriesListProps) {
-  //PROPS SETUP
+  // PROPS SETUP
   const { initialStories } = props;
-  const isRecommendations = props.mode === 'recommendations';
+  const mode = props.mode ?? 'listing';
+  const isRecommendations = mode === 'recommendations';
 
   const initialCategory = isRecommendations ? undefined : props.initialCategory;
   const initialCategories = isRecommendations ? [] : props.initialCategories;
   const categoriesError = isRecommendations ? null : props.categoriesError;
 
+  // ROUTER & TRANSITION
+  const router = useRouter();
+  const [isNavigating, startNavigation] = useTransition();
+  const listId = 'stories-list';
+
   // STORIES
   const [stories, setStories] = useState<Story[]>(initialStories);
-  const categories = initialCategories;
+  const categories = isRecommendations ? [] : (props.initialCategories ?? []);
   const [favoriteStoryIds, setFavoriteStoryIds] = useState<Record<string, boolean>>({});
   const [savingStoryId, setSavingStoryId] = useState<string | null>(null);
 
@@ -197,7 +203,7 @@ export default function StoriesList(props: StoriesListProps) {
 
       const isSaved = favoriteStoryIds[storyId] ?? user.savedArticles?.includes(storyId) ?? false;
       const shouldAdd = !isSaved;
-      const response = await fetch(`/api/stories/${storyId}/favorite`, {
+      const response = await fetch(`/api/users/saved-stories/${storyId}`, {
         method: shouldAdd ? 'POST' : 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -235,41 +241,69 @@ export default function StoriesList(props: StoriesListProps) {
 
   return (
     <>
-      {categoriesError && <p role="alert">{categoriesError}</p>}
-      {!categoriesError && categories.length > 0 && (
-        <ul className={styles.categories} aria-label="Категорії статей">
-          <li className={!initialCategory ? styles.active : undefined}>
-            <Link href="/stories" aria-current={!initialCategory ? 'page' : undefined}>
-              Усі категорії
-            </Link>
-          </li>
-
-          {categories.map(category => {
-            const isActive = initialCategory === category._id;
-
-            return (
-              <li key={category._id} className={isActive ? styles.active : undefined}>
-                <Link
-                  href={`/stories?category=${encodeURIComponent(category._id)}`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
+      {mode === 'listing' && categoriesError && <p role="alert">{categoriesError}</p>}
+      {mode === 'listing' && !categoriesError && categories.length > 0 && (
+        <>
+          <label className={styles.categorySelect}>
+            Категорії
+            <select
+              value={initialCategory ?? ''}
+              disabled={isLoading || isNavigating}
+              onChange={event => {
+                const category = event.target.value;
+                startNavigation(() =>
+                  router.push(category ? `/stories?category=${encodeURIComponent(category)}` : '/stories')
+                );
+              }}
+            >
+              <option value="">Усі категорії</option>
+              {categories.map((category: Category) => (
+                <option key={category._id} value={category._id}>
                   {category.category}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                </option>
+              ))}
+            </select>
+          </label>
+          <ul className={styles.categories} aria-label="Категорії статей">
+            <li className={!initialCategory ? styles.active : undefined}>
+              <Link href="/stories" aria-current={!initialCategory ? 'page' : undefined}>
+                Усі категорії
+              </Link>
+            </li>
+
+            {categories.map((category: Category) => {
+              const isActive = initialCategory === category._id;
+
+              return (
+                <li key={category._id} className={isActive ? styles.active : undefined}>
+                  <Link
+                    href={`/stories?category=${encodeURIComponent(category._id)}`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {category.category}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
       <div className={styles.storiesContent}>
+        {isNavigating && <p className={styles.status} role="status">Завантаження історій…</p>}
         {stories.length === 0 && !error && <p className={styles.empty}>Історій поки немає.</p>}
 
         {stories.length > 0 && (
-          <ul className={styles.list} data-limit={limit}>
+          <ul
+            id={listId}
+            className={`${styles.list} ${mode === 'recommendations' ? styles.recommendedList : ''}`}
+            data-limit={limit}
+            aria-busy={isLoading || isNavigating}
+          >
             {stories.map(story => (
               <li className={styles.item} id={`story-${story._id}`} key={story._id}>
                 <StoryCard
-                  story={story}
+                  story={{ ...story, ownerId: story.ownerId ?? undefined }}
                   isSaved={isStorySaved(story._id)}
                   isSaving={savingStoryId === story._id}
                   onToggleSaved={storyId => void toggleFavorite(storyId)}
