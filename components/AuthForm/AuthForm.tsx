@@ -1,28 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useRouter } from "next/navigation";
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import { isAxiosError } from "axios";
+import axios from "axios";
 import toast from "react-hot-toast";
 
-import { register, RegisterRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-
-import { registerSchema } from "@/lib/validation/authValidation";
+import { registerSchema, loginSchema } from "@/lib/validation/authValidation";
 import css from "./AuthForm.module.css";
 
-
-function getErrorMessage(error: unknown) {
-  if (isAxiosError(error)) {
-    const data = error.response?.data as
-      | { message?: string; status?: number }
-      | undefined;
-    return data?.message || "Сталася помилка. Спробуйте ще раз.";
-  }
-
-  if (error instanceof Error) return error.message;
-  return "Сталася помилка. Спробуйте ще раз.";
+interface AuthFormProps {
+  type: 'login' | 'register';
 }
 
 type PasswordFieldProps = {
@@ -97,54 +87,82 @@ function PasswordField({ id, autoComplete, hasError }: PasswordFieldProps) {
   );
 }
 
-export default function AuthForm() {
+interface AuthValues {
+  name?: string;
+  email: string;
+  password: string;
+}
+
+export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const { setUser } = useAuthStore();
 
-  const title = "Реєстрація";
-  const subtitle = "Раді вас бачити у спільноті мандрівників!";
-  const submitLabel = "Зареєструватись";
+  const isRegister = type === 'register';
 
-  const initialValues: RegisterRequest = {
-      name: "",
-      email: "",
-      password: "",
-    };
+  const title = isRegister ? "Реєстрація" : "Вхід";
+  const subtitle = isRegister 
+    ? "Раді вас бачити у спільноті мандрівників!" 
+    : "Вітаємо знову у спільноті мандрівників!";
+  const submitLabel = isRegister ? "Зареєструватись" : "Увійти";
 
-    return (
-      <div className={css.content}>
+  const initialValues: AuthValues = {
+    email: "",
+    password: "",
+    ...(isRegister ? { name: "" } : {}),
+  };
 
-        <div className={css.heading}>
-          <h1 className={css.title}>{title}</h1>
-          <p className={css.subtitle}>{subtitle}</p>
-        </div>
+  const handleSubmit = async (
+    values: AuthValues,
+    helpers: FormikHelpers<AuthValues>
+  ) => {
+    const endpoint = isRegister ? '/auth/register' : '/auth/login';
 
-        <Formik
-          initialValues={initialValues}
-          validationSchema={registerSchema}
-          validateOnBlur
-          validateOnChange={false}
-          onSubmit={async (values, { setSubmitting }) => {
-            try {
-              const result = await register({
-                name: values.name.trim(),
-                email: values.email.trim(),
-                password: values.password,
-              });
-              const user = "user" in result ? result.user : result;
+    try {
+      const { data } = await axios.post(endpoint, {
+        ...values,
+        ...(isRegister && values.name ? { name: values.name.trim() } : {}),
+        email: values.email.trim(),
+      });
 
-              setUser(user);
-              toast.success("Реєстрація успішна");
-              router.push("/profile");
-            } catch (error) {
-              toast.error(getErrorMessage(error));
-            } finally {
-              setSubmitting(false);
-            }
-          }}
-        >
-          {({ isSubmitting, errors, touched }) => (
-            <Form className={css.form} noValidate>
+      const user = "user" in data ? data.user : data;
+
+      setUser(user);
+      toast.success(isRegister ? "Реєстрація успішна" : "Вхід успішний");
+      router.push("/profile");
+      router.refresh();
+    } catch (err: unknown) {
+      let msg = 'Сталася помилка';
+
+      if (isAxiosError(err)) {
+        const errorData = err.response?.data as { message?: string } | undefined;
+        msg = errorData?.message || err.message;
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
+
+      toast.error(msg);
+    } finally {
+      helpers.setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className={css.content}>
+      <div className={css.heading}>
+        <h1 className={css.title}>{title}</h1>
+        <p className={css.subtitle}>{subtitle}</p>
+      </div>
+
+      <Formik<AuthValues>
+        initialValues={initialValues}
+        validationSchema={isRegister ? registerSchema : loginSchema}
+        validateOnBlur
+        validateOnChange={false}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form className={css.form} noValidate>
+            {isRegister && (
               <div className={css.field}>
                 <label className={css.label} htmlFor="name">
                   Імʼя та Прізвище*
@@ -161,54 +179,55 @@ export default function AuthForm() {
                 />
                 <ErrorMessage name="name" component="p" className={css.error} />
               </div>
+            )}
 
-              <div className={css.field}>
-                <label className={css.label} htmlFor="email">
-                  Пошта*
-                </label>
-                <Field
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="hello@podorozhnyky.ua"
-                  className={`${css.input}${
-                    touched.email && errors.email ? ` ${css.inputError}` : ""
-                  }`}
-                  autoComplete="email"
-                />
-                <ErrorMessage
-                  name="email"
-                  component="p"
-                  className={css.error}
-                />
-              </div>
+            <div className={css.field}>
+              <label className={css.label} htmlFor="email">
+                Пошта*
+              </label>
+              <Field
+                id="email"
+                name="email"
+                type="email"
+                placeholder="hello@podorozhnyky.ua"
+                className={`${css.input}${
+                  touched.email && errors.email ? ` ${css.inputError}` : ""
+                }`}
+                autoComplete="email"
+              />
+              <ErrorMessage
+                name="email"
+                component="p"
+                className={css.error}
+              />
+            </div>
 
-              <div className={css.field}>
-                <label className={css.label} htmlFor="password">
-                  Пароль*
-                </label>
-                <PasswordField
-                  id="password"
-                  autoComplete="new-password"
-                  hasError={Boolean(touched.password && errors.password)}
-                />
-                <ErrorMessage
-                  name="password"
-                  component="p"
-                  className={css.error}
-                />
-              </div>
+            <div className={css.field}>
+              <label className={css.label} htmlFor="password">
+                Пароль*
+              </label>
+              <PasswordField
+                id="password"
+                autoComplete={isRegister ? "new-password" : "current-password"}
+                hasError={Boolean(touched.password && errors.password)}
+              />
+              <ErrorMessage
+                name="password"
+                component="p"
+                className={css.error}
+              />
+            </div>
 
-              <button
-                type="submit"
-                className={css.button}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Реєструюсь…" : submitLabel}
-              </button>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    );
+            <button
+              type="submit"
+              className={css.button}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Завантаження…" : submitLabel}
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
 }
