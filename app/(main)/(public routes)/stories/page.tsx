@@ -1,7 +1,7 @@
 import styles from './page.module.css';
 import StoriesList from './StoriesList';
 import type { Story } from '@/types/story';
-// import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
+import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
 
 type Category = {
   _id: string;
@@ -81,6 +81,7 @@ type StoriesPageProps = {
 export default async function StoriesPage({ searchParams }: StoriesPageProps) {
   const params = await searchParams;
   const selectedCategory = typeof params.category === 'string' ? params.category : undefined;
+  
   const [result, categoriesResult] = await Promise.all([
     getStories(9, selectedCategory).catch(() => null),
     getCategories().then(
@@ -101,14 +102,18 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
         <h1 id="stories-title">Статті</h1>
       </header>
 
-      {result ? <StoriesList
-        key={selectedCategory ?? 'all'}
-        mode='listing'
-        initialStories={stories}
-        initialCategory={selectedCategory}
-        initialCategories={categoriesResult.categories}
-        categoriesError={categoriesResult.error}
-      />
-      </section>
+      {result ? (
+        <StoriesList
+          key={selectedCategory ?? 'all'}
+          mode="listing"
+          initialStories={result.stories}
+          initialCategory={selectedCategory}
+          initialCategories={categoriesResult.categories}
+          categoriesError={categoriesResult.error}
+        />
+      ) : (
+        <p>Не вдалося завантажити статті.</p>
+      )}
+    </section>
   );
 }
