@@ -1,7 +1,7 @@
 import styles from './page.module.css';
 import StoriesList from './StoriesList';
-
-import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
+import type { Story } from '@/types/story';
+// import { parseStoriesResponse, type StoriesResponse } from '@/lib/api/storiesResponse';
 
 type Category = {
   _id: string;
@@ -135,11 +135,12 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
 
       <StoriesList
         key={selectedCategory ?? 'all'}
+        mode='listing'
         initialStories={stories}
         initialCategory={selectedCategory}
         initialCategories={categoriesResult.categories}
         categoriesError={categoriesResult.error}
       />
-    </main>
+      </section>
   );
 }

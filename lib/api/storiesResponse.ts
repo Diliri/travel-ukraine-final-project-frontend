@@ -3,7 +3,7 @@ export type Story = {
   img: string;
   title: string;
   rate: number;
-  ownerId?: { _id?: string; name: string } | string | null;
+  ownerId?: { _id?: string; name: string } | string;
   desc?: string;
   article?: string;
   author?: string;
@@ -32,8 +32,8 @@ export function isStory(value: unknown): value is Story {
     || !Number.isFinite(item.rate)) return false;
   if (!['desc', 'article', 'author', 'date'].every(key => item[key] === undefined || typeof item[key] === 'string')) return false;
   const owner = item.ownerId;
-  return owner === undefined || owner === null || typeof owner === 'string'
-    || (typeof owner === 'object' && 'name' in owner && typeof owner.name === 'string');
+  return typeof owner === 'string'
+    || (typeof owner === 'object' && owner !== null && 'name' in owner && typeof owner.name === 'string');
 }
 
 export function parseStoriesResponse(value: unknown): StoriesResponse {

@@ -10,7 +10,7 @@ export type Story = {
     _id: string;
     name: string;
   };
-  rate?: number;
+  rate: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -36,4 +36,11 @@ export interface ProfileStoriesResponse {
   perPage: number;
   totalItems: number;
   totalPages: number;
+}
+
+export type CreateStoryFormValues = {
+  image: File | null;
+  title: string;
+  category: string;
+  article: string;
 }

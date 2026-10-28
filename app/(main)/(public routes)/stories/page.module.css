@@ -208,6 +208,7 @@
   min-height: 54px;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .dot {

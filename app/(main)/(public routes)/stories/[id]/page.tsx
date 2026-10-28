@@ -51,10 +51,14 @@ export default async function StoryByIdPage({ params }: { params: Promise<{ id: 
         <section className={styles.recommendations} aria-labelledby="recommendations-title">
           <h2 id="recommendations-title">Вам також сподобається</h2>
           {recommendations.length > 0 ? (
-            <StoriesList key={id} initialStories={recommendations} mode="recommendations" />
+            <StoriesList
+  key={id}
+  mode="recommendations"
+  initialStories={recommendations}
+/>
           ) : <p>{recommendationsFailed ? 'Не вдалося завантажити рекомендації.' : 'Інших історій поки немає.'}</p>}
         </section>
       </div>
     </div>
   );
-}
+} 

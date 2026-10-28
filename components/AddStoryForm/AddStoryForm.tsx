@@ -5,10 +5,8 @@ import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import * as Yup from 'yup';
-import type {
-  CreateStoryFormValues,
-  StoryCategory,
-} from '@/types/story';
+import type { CreateStoryFormValues } from '@/types/story';
+import type { Category } from '@/types/category';
 import StoryFormImage from '@/components/StoryFormImage/StoryFormImage';
 import styles from './AddStoryForm.module.css';
 
@@ -50,7 +48,7 @@ const validationSchema = Yup.object({
     .max(3000, 'Текст історії не повинен перевищувати 3000 символів'),
 });
 
-function isCategory(value: unknown): value is StoryCategory {
+function isCategory(value: unknown): value is Category {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -105,7 +103,7 @@ function readErrorMessage(payload: unknown): string | null {
 export default function AddStoryForm() {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [categories, setCategories] = useState<StoryCategory[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
