@@ -10,25 +10,6 @@ type Category = {
 
 export const dynamic = 'force-dynamic';
 
-function isStory(value: unknown): value is Story {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    '_id' in value &&
-    typeof value._id === 'string' &&
-    'img' in value &&
-    typeof value.img === 'string' &&
-    'title' in value &&
-    typeof value.title === 'string' &&
-    'rate' in value &&
-    typeof value.rate === 'number' &&
-    (!('desc' in value) || typeof value.desc === 'string') &&
-    (!('article' in value) || typeof value.article === 'string') &&
-    (!('author' in value) || typeof value.author === 'string') &&
-    (!('date' in value) || typeof value.date === 'string')
-  );
-}
-
 function isCategory(value: unknown): value is Category {
   return (
     typeof value === 'object' &&
@@ -40,7 +21,7 @@ function isCategory(value: unknown): value is Category {
   );
 }
 
-async function getStories(limit: 8 | 9, category?: string): Promise<Story[]> {
+async function getStories(limit: 8 | 9, category?: string): Promise<StoriesResponse> {
   const configuredBackendUrl = process.env.BACKEND_URL?.trim() || 'http://localhost:3000';
   const backendUrl = /^[a-z][a-z\d+.-]*:\/\//i.test(configuredBackendUrl)
     ? configuredBackendUrl
@@ -65,20 +46,7 @@ async function getStories(limit: 8 | 9, category?: string): Promise<Story[]> {
     throw new Error(`Не вдалося завантажити історії: ${response.status}`);
   }
 
-  const payload: unknown = await response.json();
-  const stories =
-    typeof payload === 'object' &&
-    payload !== null &&
-    'stories' in payload &&
-    Array.isArray(payload.stories)
-      ? payload.stories
-      : null;
-
-  if (!Array.isArray(stories) || !stories.every(isStory)) {
-    throw new Error('Сервер повернув некоректний список історій');
-  }
-
-  return stories;
+  return parseStoriesResponse(await response.json());
 }
 
 async function getCategories(): Promise<Category[]> {
@@ -113,8 +81,8 @@ type StoriesPageProps = {
 export default async function StoriesPage({ searchParams }: StoriesPageProps) {
   const params = await searchParams;
   const selectedCategory = typeof params.category === 'string' ? params.category : undefined;
-  const [stories, categoriesResult] = await Promise.all([
-    getStories(9, selectedCategory),
+  const [result, categoriesResult] = await Promise.all([
+    getStories(9, selectedCategory).catch(() => null),
     getCategories().then(
       categories => ({ categories, error: null }),
       error => ({
@@ -133,13 +101,22 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
         <h1 id="stories-title">Статті</h1>
       </header>
 
-      <StoriesList
+      {result ? <StoriesList
         key={selectedCategory ?? 'all'}
-        initialStories={stories}
+        initialStories={result.stories}
+        initialPagination={result.pagination}
         initialCategory={selectedCategory}
         initialCategories={categoriesResult.categories}
         categoriesError={categoriesResult.error}
-      />
-    </main>
+      /> : (
+        <div className={styles.status} role="alert">
+          <p>Не вдалося завантажити історії. Спробуйте ще раз трохи пізніше.</p>
+          <form action="/stories" method="get">
+            {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
+            <button type="submit">Спробувати ще раз</button>
+          </form>
+        </div>
+      )}
+    </section>
   );
 }
