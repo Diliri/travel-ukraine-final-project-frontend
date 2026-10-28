@@ -219,7 +219,9 @@ select:focus {
   --color-scheme-1-accent: var(--color-mantis-light);
 
   
-  --opacity-neutral-darkest-5: var(--color-mantis-darker);
-  --opacity-neutral-darkest-60: var(--color-mantis-lighter);
-  --color-error: var(--color-white);
+  --color-button-light-text: var(--color-mantis-darkest);
+  
+    --opacity-neutral-darkest-5: var(--color-mantis-darker);
+    --opacity-neutral-darkest-60: var(--color-mantis-lighter);
+    --color-error: var(--color-white);
 }
