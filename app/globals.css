@@ -38,6 +38,7 @@ body {
   min-height: 100vh;
 }
 
+
 main {
   flex: 1;
 }
@@ -153,6 +154,9 @@ select:focus {
 }
 
 @media screen and (min-width: 375px) {
+  main {
+    padding-top: 85px;
+  }
   .container {
     max-width: 375px;
   }
@@ -174,6 +178,9 @@ select:focus {
 }
 
 @media screen and (min-width: 1440px) {
+  main {
+    padding-top: 101px;
+  }
   .container {
     max-width: 1440px;
     padding: 0 64px;
