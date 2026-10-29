@@ -158,7 +158,7 @@ export default function AddStoryForm() {
       if (!values.image) return;
 
       const formData = new FormData();
-      formData.append('image', values.image);
+      formData.append('img', values.image);
       formData.append('title', values.title.trim());
       formData.append('category', values.category);
       formData.append('article', values.article.trim());
