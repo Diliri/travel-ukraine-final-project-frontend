@@ -72,7 +72,7 @@ export default function ProfileStoriesClient({ mode = 'own' }: ProfileStoriesCli
 
       try {
         const endpoint =
-          mode === 'saved' ? '/api/stories/saved' : '/api/stories/me';
+        mode === 'saved' ? '/api/users/me/saved-stories' : '/api/users/me/stories';
 
         const response = await fetch(endpoint, {
           credentials: 'include',
@@ -82,6 +82,13 @@ export default function ProfileStoriesClient({ mode = 'own' }: ProfileStoriesCli
 
         if (response.status === 401) {
           throw new Error('Потрібно увійти в акаунт.');
+        }
+
+        if (response.status === 404) {
+          if (!controller.signal.aborted) {
+            setStories([]);
+          }   
+          return;
         }
 
         if (!response.ok) {
