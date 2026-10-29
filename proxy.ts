@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 
 const protectedRoutes = ["/profile", "/stories/new"];
+const authRoutes = ["/login", "/register"];
 
 type ParsedCookie = {
   name: string;
@@ -170,6 +171,16 @@ export async function proxy(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some((route) =>
     isMatchingRoute(pathname, route),
   );
+  const isAuthRoute = authRoutes.some((route) =>
+    isMatchingRoute(pathname, route),
+  );
+
+  if (isAuthRoute && accessToken) {
+    const response = NextResponse.redirect(new URL("/profile", request.url));
+    setCookiesIfPresent(response, sessionResponseCookies);
+    return response;
+  }
+
   if (isProtectedRoute && !accessToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname + search);
@@ -189,7 +200,7 @@ export const config = {
     "/profile/:path*",
     "/stories/new",
     "/stories/:path*/edit",
-    "/auth/login",
-    "/auth/register",
+    "/login",
+    "/register",
   ],
 };
