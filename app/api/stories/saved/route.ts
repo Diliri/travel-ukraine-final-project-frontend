@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const backendUrl = /^[a-z][a-z\d+.-]*:\/\//i.test(configuredBackendUrl)
     ? configuredBackendUrl
     : `http://${configuredBackendUrl}`;
-  const savedStoriesUrl = new URL('/api/stories/saved-stories', backendUrl);
+  const savedStoriesUrl = new URL('/api/users/me/saved-stories', backendUrl);
 
   if (!['http:', 'https:'].includes(savedStoriesUrl.protocol)) {
     return Response.json({ message: 'BACKEND_URL must use http:// or https://' }, { status: 500 });
