@@ -12,6 +12,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiError } from '@/lib/api/profileApi';
 import { getStoriesClient } from '@/lib/api/clientApi';
 import styles from './page.module.css';
+import Loader from '@/components/Loader/Loader';
+
 
 type Category = {
   _id: string;
@@ -290,7 +292,7 @@ export default function StoriesList(props: StoriesListProps) {
       )}
 
       <div className={styles.storiesContent}>
-        {isNavigating && <p className={styles.status} role="status">Завантаження історій…</p>}
+        {isNavigating && <Loader />}
         {stories.length === 0 && !error && <p className={styles.empty}>Історій поки немає.</p>}
 
         {stories.length > 0 && (
@@ -315,7 +317,7 @@ export default function StoriesList(props: StoriesListProps) {
 
         <div ref={endRef} aria-hidden="true" />
 
-        {isLoading && <p className={styles.status}>Завантаження історій…</p>}
+        {isLoading && !isNavigating && <Loader />}
 
         {error && (
           <div className={styles.status} role="alert">

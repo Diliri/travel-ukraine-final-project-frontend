@@ -2,6 +2,7 @@
 
 import TravellerInfo from './TravellerInfo';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import Loader from '@/components/Loader/Loader';
 
 // Читає користувача з того самого react-query кешу, що й сторінка /profile/edit,
 // тому картка профілю оновлюється одразу після збереження змін.
@@ -9,7 +10,7 @@ export default function CurrentUserInfo() {
   const { data: user, isLoading, isError } = useCurrentUser();
 
   if (isLoading) {
-    return <p>Завантаження профілю...</p>;
+    return <Loader />; //<p>Завантаження профілю...</p>;
   }
 
   if (isError || !user) {

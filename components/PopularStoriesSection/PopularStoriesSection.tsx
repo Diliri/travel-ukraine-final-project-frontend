@@ -7,6 +7,7 @@ import { nextServer } from '@/lib/api/api';
 import type { StoriesResponse, Story } from '@/lib/api/storiesResponse';
 import styles from './PopularStoriesSection.module.css';
 import CarouselArrowButton from '@/components/CarouselArrowButton/CarouselArrowButton';
+import Loader from '@/components/Loader/Loader';
 
 export default function PopularStoriesSection() {
   const [stories, setStories] = useState<Story[]>([]);
@@ -74,7 +75,7 @@ export default function PopularStoriesSection() {
     <section className={styles.section} aria-busy={isLoading}>
       <h2 className={styles.title}>Популярні історії</h2>
 
-      {isLoading && <p className={styles.message}>Завантаження історій...</p>}
+      {isLoading && <Loader />}
 
       {!isLoading && error && (
         <p className={styles.message} role="alert">

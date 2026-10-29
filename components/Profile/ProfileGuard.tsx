@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import Loader from '@/components/Loader/Loader';
 
 type ProfileGuardProps = {
   children: ReactNode;
@@ -52,7 +53,9 @@ export default function ProfileGuard({ children }: ProfileGuardProps) {
   }, [router]);
 
   if (status === 'loading' || status === 'unauthorized') {
-    return <p>Перевірка авторизації...</p>;
+  //   return <p>Перевірка авторизації...</p>;
+  // }
+    return <Loader />;
   }
 
   if (status === 'error') {

@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 
-//import Loader from '@/components/Loader'
+import Loader from '@/components/Loader/Loader'
 import { useAuthStore } from '@/lib/store/authStore';
 import { fetchCurrentUser } from '@/lib/api/profileApi';
 
@@ -32,10 +32,7 @@ export default function AuthProvider({ children }: Props) {
   }, [setUser, clearIsAuthenticated]);
 
   // Показуємо лоудер під час перевірки сесії
-  if (isLoading) {
-    return <div>Loading...</div>;
-    // return <LoaderComponent />
-  }
+  if (isLoading) return <Loader />;
 
   return children;
 }

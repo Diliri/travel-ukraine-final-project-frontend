@@ -8,6 +8,7 @@ import StoryCard, { type StoryCardData } from '@/components/StoryCard/StoryCard'
 import { CURRENT_USER_KEY } from '@/hooks/useCurrentUser';
 import type { ProfileUser } from '@/lib/api/profileApi';
 import styles from './ProfileStoriesClient.module.css';
+import Loader from '@/components/Loader/Loader';
 
 type ProfileStory = StoryCardData;
 
@@ -148,7 +149,7 @@ export default function ProfileStoriesClient({ mode = 'own' }: ProfileStoriesCli
   };
 
   if (loading) {
-    return <p>Завантаження історій...</p>;
+    return <Loader />; //<p>Завантаження історій...</p>;
   }
 
   if (error) {

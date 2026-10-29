@@ -6,12 +6,13 @@ import ChangePasswordForm from "@/components/ChangePasswordForm/ChangePasswordFo
 import { CURRENT_USER_KEY, useCurrentUser } from "@/hooks/useCurrentUser";
 import type { ProfileUser } from "@/lib/api/profileApi";
 import css from "./PersonalSettings.module.css";
+import Loader from '@/components/Loader/Loader';
 
 export default function PersonalSettings() {
   const queryClient = useQueryClient();
   const { data: user, isLoading, isError } = useCurrentUser();
 
-  if (isLoading) return <p>Завантаження профілю...</p>;
+  if (isLoading) return <Loader />; //<p>Завантаження профілю...</p>;
   if (isError || !user) return <p>Не вдалося завантажити дані користувача.</p>;
 
   const handleUpdated = (updated: ProfileUser) =>
