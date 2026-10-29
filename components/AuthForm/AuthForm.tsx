@@ -89,6 +89,39 @@ interface RegisterValues {
   password: string;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const data: unknown = error.response?.data;
+
+    if (typeof data === "string" && data.trim()) {
+      return data;
+    }
+
+    if (data && typeof data === "object" && "message" in data) {
+      const message = data.message;
+      if (typeof message === "string" && message.trim()) {
+        return message;
+      }
+      if (Array.isArray(message)) {
+        const messages = message.filter(
+          (item): item is string =>
+            typeof item === "string" && item.trim().length > 0
+        );
+        if (messages.length > 0) return messages.join(". ");
+      }
+    }
+
+    if (!error.response) {
+      return "Не вдалося з'єднатися із сервером. Перевірте налаштування API та спробуйте ще раз.";
+    }
+
+    return "Сталася помилка. Спробуйте ще раз.";
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Сталася помилка. Спробуйте ще раз.";
+}
+
 const initialValues: RegisterValues = {
   name: "",
   email: "",
@@ -114,17 +147,8 @@ export default function AuthForm() {
       toast.success("Реєстрація успішна");
       router.push("/profile");
       router.refresh();
-    } catch (err: unknown) {
-      let msg = "Сталася помилка";
-
-      if (isAxiosError(err)) {
-        const errorData = err.response?.data as { message?: string } | undefined;
-        msg = errorData?.message || err.message;
-      } else if (err instanceof Error) {
-        msg = err.message;
-      }
-
-      toast.error(msg);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       helpers.setSubmitting(false);
     }

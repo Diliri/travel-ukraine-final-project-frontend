@@ -29,8 +29,30 @@ const initialLoginValues: LoginRequest = {
 
 function getErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
-    const data = error.response?.data as { message?: string } | undefined;
-    return data?.message || "Сталася помилка. Спробуйте ще раз.";
+    const data: unknown = error.response?.data;
+
+    if (typeof data === "string" && data.trim()) {
+      return data;
+    }
+
+    if (data && typeof data === "object" && "message" in data) {
+      const message = data.message;
+      if (typeof message === "string" && message.trim()) {
+        return message;
+      }
+      if (Array.isArray(message)) {
+        const messages = message.filter(
+          (item): item is string => typeof item === "string" && item.trim().length > 0
+        );
+        if (messages.length > 0) return messages.join(". ");
+      }
+    }
+
+    if (!error.response) {
+      return "Не вдалося з'єднатися із сервером. Перевірте налаштування API та спробуйте ще раз.";
+    }
+
+    return "Сталася помилка. Спробуйте ще раз.";
   }
 
   if (error instanceof Error) return error.message;
