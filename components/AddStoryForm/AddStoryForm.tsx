@@ -4,10 +4,13 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
 import type { CreateStoryFormValues } from '@/types/story';
 import type { Category } from '@/types/category';
 import StoryFormImage from '@/components/StoryFormImage/StoryFormImage';
+import { CURRENT_USER_KEY } from '@/hooks/useCurrentUser';
+import type { ProfileUser } from '@/lib/api/profileApi';
 import styles from './AddStoryForm.module.css';
 
 const MAX_IMAGE_SIZE = 1024 * 1024;
@@ -102,6 +105,7 @@ function readErrorMessage(payload: unknown): string | null {
 
 export default function AddStoryForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -181,6 +185,18 @@ export default function AddStoryForm() {
         if (!storyId) {
           throw new Error('Сервер не повернув ID створеної історії');
         }
+
+        queryClient.setQueryData<ProfileUser | undefined>(
+          CURRENT_USER_KEY,
+          currentUser =>
+            currentUser
+              ? {
+                  ...currentUser,
+                  articlesAmount: (currentUser.articlesAmount ?? 0) + 1,
+                }
+              : currentUser,
+        );
+        void queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
 
         toast.success('Історію успішно створено');
         router.push(`/stories/${storyId}`);
