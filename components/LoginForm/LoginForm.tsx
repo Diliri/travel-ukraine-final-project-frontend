@@ -124,7 +124,7 @@ const LoginForm = () => {
       });
 
       setUser(res);
-      queryClient.setQueryData(CURRENT_USER_KEY, res);
+      queryClient.removeQueries({ queryKey: CURRENT_USER_KEY });
       toast.success("Вхід успішний");
       router.push("/profile");
     } catch (error) {
