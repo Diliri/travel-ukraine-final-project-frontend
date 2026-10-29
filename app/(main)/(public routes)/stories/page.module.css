@@ -348,7 +348,7 @@
 @media (min-width: 1440px) {
   .page {
     width: min(1312px, calc(100% - 128px));
-    padding-top: 72px;
+    padding-top: 112px;
     padding-bottom: 72px;
   }
 
