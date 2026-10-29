@@ -84,7 +84,10 @@
     border: 1px solid var(--opacity-neutral-darkest-15);
     border-radius: 6px;
     outline: none;
-    transition: border-color 200ms ease;
+transition:
+        border-color 200ms ease,
+        background-color 200ms ease,
+        box-shadow 200ms ease;
 }
 
 .input::placeholder {
@@ -235,4 +238,39 @@
     .button {
         font-size: 20px;
     }
+}
+
+:global([data-theme='dark']) .input {
+    border-color: rgba(238, 248, 238, 0.45);
+    background: rgba(238, 248, 238, 0.06);
+    color: #eef8ee;
+}
+
+:global([data-theme='dark']) .input::placeholder {
+    color: rgba(238, 248, 238, 0.6);
+}
+
+:global([data-theme='dark']) .input:hover {
+    border-color: var(--color-mantis-light);
+    background: rgba(238, 248, 238, 0.1);
+}
+
+:global([data-theme='dark']) .input:focus {
+    border-color: var(--color-mantis);
+    background: rgba(238, 248, 238, 0.1);
+    box-shadow: 0 0 0 3px rgba(93, 190, 92, 0.35);
+}
+
+:global([data-theme='dark']) .inputError,
+:global([data-theme='dark']) .inputError:hover,
+:global([data-theme='dark']) .inputError:focus {
+    border-color: var(--color-red);
+}
+
+:global([data-theme='dark']) .inputError:focus {
+    box-shadow: 0 0 0 3px rgba(176, 1, 1, 0.35);
+}
+
+:global([data-theme='dark']) .togglePassword {
+    color: #eef8ee;
 }

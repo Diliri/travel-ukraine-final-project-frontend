@@ -22,9 +22,9 @@
 .info {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
-    text-align: left;
+    text-align: center;
 }
 
 .name {
@@ -66,4 +66,36 @@
 .link:hover {
     background: var(--color-mantis-dark);
     color: var(--color-white);
+}
+
+.card {
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+:global([data-theme='dark']) .card {
+    background: #2f5a2e;
+}
+
+:global([data-theme='dark']) .name,
+:global([data-theme='dark']) .count {
+    color: #eef8ee;
+}
+
+:global([data-theme='dark']) .link {
+    border: 1px solid rgba(238, 248, 238, 0.45);
+    background: transparent;
+    color: #eef8ee;
+}
+
+:global([data-theme='dark']) .link:hover {
+    border-color: rgba(238, 248, 238, 0.9);
+    background: rgba(238, 248, 238, 0.14);
+    color: #ffffff;
 }

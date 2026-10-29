@@ -9,6 +9,7 @@ export default function HomePage() {
     <>
       <Hero />
       <PopularStoriesSection />
+      
       <About />
       <OurTravellers />
       <JoinUs isAuthenticated={false} />

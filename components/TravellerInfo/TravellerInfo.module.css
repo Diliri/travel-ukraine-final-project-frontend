@@ -40,3 +40,8 @@
         font-size: 32px;
     }
 }
+
+:global([data-theme='dark']) .name,
+:global([data-theme='dark']) .count {
+    color: var(--color-white);
+}

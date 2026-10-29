@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 
-const protectedRoutes = ["/profile", "/stories/create"];
+const protectedRoutes = ["/profile", "/stories/new"];
 
 type ParsedCookie = {
   name: string;
@@ -187,7 +187,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/profile/:path*",
-    "/stories/create",
+    "/stories/new",
     "/stories/:path*/edit",
     "/auth/login",
     "/auth/register",
