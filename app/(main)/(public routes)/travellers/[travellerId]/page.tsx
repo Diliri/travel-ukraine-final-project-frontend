@@ -1,10 +1,9 @@
 import MessageNoStories from '@/components/MessageNoStories/MessageNoStories';
 import TravellerInfo from '@/components/TravellerInfo/TravellerInfo';
 import Link from 'next/link';
+import { isAxiosError } from 'axios';
+import serverApi from '@/app/api/api';
 import css from './page.module.css';
-
-const API_URL = `${process.env.BACKEND_URL?.trim() || 'http://localhost:4000'}/api`;
-
 
 interface Story {
   _id: string;
@@ -26,11 +25,18 @@ interface TravellerResponse {
 }
 
 async function getTraveller(id: string): Promise<TravellerResponse | null> {
-  const res = await fetch(`${API_URL}/users/${id}?page=1&perPage=6`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const { data } = await serverApi.get<TravellerResponse>(`/users/${encodeURIComponent(id)}`, {
+      params: { page: 1, perPage: 6 },
+    });
+    return data;
+  } catch (error) {
+    if (isAxiosError(error) && error.response?.status === 404) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export default async function TravellerPage({
@@ -61,7 +67,7 @@ export default async function TravellerPage({
         />
       ) : (
         <ul className={css.list}>
-          {data.articles.map((story) => (
+          {data.articles.map(story => (
             <li className={css.item} key={story._id}>
               <Link href={`/stories/${story._id}`}>{story.title}</Link>
             </li>
