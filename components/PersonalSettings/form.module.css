@@ -79,7 +79,6 @@
 .submit:hover:not(:disabled),
 .submit:focus-visible:not(:disabled) {
   background-color: var(--color-mantis-darker);
-  border-color: var(--color-mantis-darker);
 }
 
 .cancel {
@@ -90,7 +89,8 @@
 
 .cancel:hover:not(:disabled),
 .cancel:focus-visible:not(:disabled) {
-  background-color: var(--opacity-neutral-darkest-15);
+  border-color: var(--color-mantis-dark);
+  background-color: var(--color-scheme-2-foreground);
 }
 
 .submit:disabled,
@@ -105,6 +105,7 @@
     max-width: 422px;
     padding-top: 24px;
   }
+
   .submit,
   .cancel {
     flex: 1;
@@ -112,10 +113,12 @@
 }
 
 @media (min-width: 1440px) {
+
   .label,
   .input {
     font-size: 18px;
   }
+
   .submit,
   .cancel {
     font-size: 20px;
