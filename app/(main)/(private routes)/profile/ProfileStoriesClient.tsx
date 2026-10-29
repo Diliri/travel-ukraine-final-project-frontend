@@ -167,7 +167,7 @@ export default function ProfileStoriesClient({ mode = 'own' }: ProfileStoriesCli
         </h2>
 
         <Link
-          href={isSaved ? '/stories' : '/stories/create'}
+          href={isSaved ? '/stories' : '/stories/new'}
           className={styles.profileStoriesButton}
         >
           {isSaved ? 'До історій' : 'Опублікувати історію'}
