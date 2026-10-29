@@ -1,17 +1,17 @@
-import { User } from '@/lib/api/clientApi';
 import { create } from 'zustand';
+import type { ProfileUser } from '@/lib/api/profileApi';
 
 type AuthStore = {
   isAuthenticated: boolean;
-  user: User | null;
-  setUser: (user: User) => void;
+  user: ProfileUser | null;
+  setUser: (user: ProfileUser) => void;
   clearIsAuth: () => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
   isAuthenticated: false,
   user: null,
-  setUser: (user: User) => {
+  setUser: (user: ProfileUser) => {
     set(() => ({ user, isAuthenticated: true }));
   },
   clearIsAuth: () => {

@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 
 //import Loader from '@/components/Loader'
 import { useAuthStore } from '@/lib/store/authStore';
-import { checkSession, getMe } from '@/lib/api/clientApi';
+import { fetchCurrentUser } from '@/lib/api/profileApi';
 
 type Props = {
   children: ReactNode;
@@ -19,16 +19,8 @@ export default function AuthProvider({ children }: Props) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const isSessionValid = await checkSession();
-
-        if (isSessionValid) {
-          const user = await getMe();
-          if (user) {
-            setUser(user);
-          }
-        } else {
-          clearIsAuthenticated();
-        }
+        const user = await fetchCurrentUser();
+        setUser(user);
       } catch {
         clearIsAuthenticated();
       } finally {
