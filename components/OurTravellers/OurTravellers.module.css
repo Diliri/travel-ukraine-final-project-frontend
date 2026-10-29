@@ -16,7 +16,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.2;
-    color: var(--color-mantis-darkest);
+    color: var(--color-scheme-2-text);
 }
 
 .all {
@@ -123,4 +123,9 @@
         grid-template-columns: repeat(4, 310px);
         justify-content: center;
     }
+}
+
+/* Dark theme */
+:global(.dark) .title {
+    color: var(--color-mantis-lightest);
 }

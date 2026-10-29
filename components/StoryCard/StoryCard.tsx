@@ -7,7 +7,10 @@ import styles from './StoryCard.module.css';
 export type StoryCardData = {
   _id: string;
   img: string;
+  imgMob?: string;
+  imgTab?: string;
   title: string;
+  shortTitle?: string;
   rate: number;
   ownerId?: { name: string } | string ;
   author?: string;
@@ -40,14 +43,22 @@ export default function StoryCard({
         href={`/stories/${story._id}`}
         aria-label={`Читати історію: ${story.title}`}
       >
-        <Image
-          className={styles.image}
-          src={story.img}
-          alt={story.title}
-          width={421}
-          height={421}
-          unoptimized
-        />
+        <picture>
+          {story.imgMob && (
+            <source media="(max-width: 767px)" srcSet={story.imgMob} />
+          )}
+          {story.imgTab && (
+            <source media="(min-width: 768px) and (max-width: 1199px)" srcSet={story.imgTab} />
+          )}
+          <Image
+            className={styles.image}
+            src={story.img}
+            alt={story.title}
+            width={421}
+            height={421}
+            unoptimized
+          />
+        </picture>
       </Link>
       <div className={styles.content}>
         <p className={styles.meta}>
@@ -87,8 +98,13 @@ export default function StoryCard({
           </span>
         </p>
         <h2 className={styles.title}>
-          <Link href={`/stories/${story._id}`}>{story.title}</Link>
-        </h2>
+  <Link href={`/stories/${story._id}`}>
+    <span className={styles.titleFull}>{story.title}</span>
+    {story.shortTitle && (
+      <span className={styles.titleShort}>{story.shortTitle}</span>
+    )}
+  </Link>
+</h2>
         <div className={styles.footer}>
           <Link className={styles.readMore} href={`/stories/${story._id}`}>
             Переглянути статтю

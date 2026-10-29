@@ -1,6 +1,6 @@
 .wrapper {
   width: 100%;
-  background-color: var(--color-mantis-lightest);
+  background-color: var(--color-scheme-2-background);
 }
 
 .container {
@@ -55,7 +55,7 @@
 .description {
   max-width: 768px;
   margin: 0;
-  color: #FFFFFF;
+  color: var(--color-white);
 
   font-size: 20px;
   line-height: 1.5;
@@ -139,4 +139,31 @@
   .joinbtn {
     transition: none;
   }
+}
+
+/* Dark theme */
+:global(.dark) .wrapper {
+  background-color: var(--color-scheme-2-background);
+}
+
+:global(.dark) .joinus {
+  background-color: var(--color-mantis-darkest);
+  border-color: var(--color-mantis-lighter);
+}
+
+:global(.dark) .title,
+:global(.dark) .description {
+  color: var(--color-mantis-lightest);
+}
+
+:global(.dark) .joinbtn {
+  background-color: var(--color-mantis-dark);
+  border-color: var(--color-mantis-dark);
+  color: var(--color-white);
+}
+
+:global(.dark) .joinbtn:hover,
+:global(.dark) .joinbtn:focus-visible {
+  background-color: var(--color-mantis-light);
+  color: var(--color-mantis-darkest);
 }

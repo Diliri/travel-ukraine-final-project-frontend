@@ -354,3 +354,16 @@
     min-height: 78px;
   }
 }
+/* Dark theme */
+:global(.dark) .categories li,
+:global(.dark) .categories a,
+:global(.dark) .categories button {
+  color: #fff;
+}
+
+:global(.dark) .categories .active,
+:global(.dark) .categories .active a,
+:global(.dark) .categories .active button {
+  color: var(--color-mantis-darkest);
+  background: #fff;
+}

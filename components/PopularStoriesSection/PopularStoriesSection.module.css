@@ -2,14 +2,71 @@
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 48px 16px;
+  padding: 48px 20px;
   color: var(--color-scheme-2-text);
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
 }
 
 .title {
-  margin: 0 0 24px;
+  margin: 0;
   font-weight: 700;
   line-height: 1.2;
+  font-size: 28px;
+}
+
+.allStories {
+  display: none;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 8px;
+  width: 120px;
+  height: 48px;
+  background: #4A9849;
+  border: 1px solid #4A9849;
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 150%;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.allStories:hover,
+.allStories:focus-visible {
+  background-color: #3d7a3c;
+}
+
+.allStoriesMobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 14px 20px;
+  background-color: #4a9849;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 16px;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.allStoriesMobile:hover,
+.allStoriesMobile:focus-visible {
+  background-color: #3d7a3c;
 }
 
 .list {
@@ -31,36 +88,66 @@
   scroll-snap-align: start;
 }
 
-.message {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.5;
-}
 .controls {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 40px;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
 }
+
 @media (min-width: 768px) {
   .section {
     padding: 64px 32px;
   }
 
-  .title {
+  .header {
     margin-bottom: 32px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .allStories {
+    display: inline-flex;
+  }
+
+  .allStoriesMobile {
+    display: none;
   }
 
   .list > * {
     flex-basis: calc((100% - 24px) / 2);
   }
+
+  .controls {
+    justify-content: flex-end;
+    margin-top: 32px;
+  }
 }
 
 @media (min-width: 1200px) {
+  .section {
+    padding: 72px 64px;
+  }
+
+  .title {
+    font-size: 40px;
+  }
+
   .list > * {
     flex-basis: calc((100% - 48px) / 3);
   }
+
   .controls {
-    display: none;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .section {
+    max-width: 1440px;
+    padding: 72px 64px;
   }
 }

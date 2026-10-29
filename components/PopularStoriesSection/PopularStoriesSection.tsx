@@ -1,45 +1,44 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { isAxiosError } from 'axios';
+import { useRef } from 'react';
+import Link from 'next/link';
 import StoryCard from '@/components/StoryCard/StoryCard';
-import { nextServer } from '@/lib/api/api';
-import type { StoriesResponse, Story } from '@/lib/api/storiesResponse';
+import type { StoryCardData } from '@/components/StoryCard/StoryCard';
 import styles from './PopularStoriesSection.module.css';
 import CarouselArrowButton from '@/components/CarouselArrowButton/CarouselArrowButton';
 
+const popularStories: StoryCardData[] = [
+  {
+    _id: 'karpaty-novachkiv',
+    title: 'Карпати для новачків: легкі маршрути вихідного дня',
+    shortTitle: 'Карпати для новачків: легкі маршрути вихідног...',
+    img: '/img/sections/popular/karpaty-desk.jpg',
+    imgMob: '/img/sections/popular/karpaty-mob.jpg',
+    imgTab: '/img/sections/popular/karpaty-tab.jpg',
+    rate: 5,
+    author: 'Анастасія Олійник',
+  },
+  {
+    _id: 'shatski-ozera',
+    title: 'Шацькі озера: мандрівка до кришталевих вод',
+    shortTitle: 'Шацькі озера: мандрівка до кришталевих вод',
+    img: '/img/sections/popular/shatski-desk.jpg',
+    imgTab: '/img/sections/popular/shatski-tab.jpg',
+    rate: 5,
+    author: 'Назар Ткаченко',
+  },
+  {
+    _id: 'polissya',
+    title: 'Полісся: мандрівка у світ пралісів',
+    shortTitle: 'Полісся: мандрівка у світ пралісів',
+    img: '/img/sections/popular/polissya-desk.jpg',
+    rate: 5,
+    author: 'Єва Бондаренко',
+  },
+];
+
 export default function PopularStoriesSection() {
-  const [stories, setStories] = useState<Story[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    async function loadPopularStories() {
-      try {
-        const { data } = await nextServer.get<StoriesResponse>('/stories/popular', {
-          params: {
-            page: 1,
-            perPage: 3,
-          },
-        });
-
-        setStories(data.stories);
-      } catch (requestError) {
-        if (isAxiosError<{ message?: string }>(requestError)) {
-          setError(
-            requestError.response?.data?.message ?? 'Не вдалося завантажити популярні історії.'
-          );
-        } else {
-          setError('Не вдалося завантажити популярні історії.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    void loadPopularStories();
-  }, []);
 
   const scrollStories = (direction: 'next' | 'previous') => {
     const list = listRef.current;
@@ -71,46 +70,39 @@ export default function PopularStoriesSection() {
   };
 
   return (
-    <section className={styles.section} aria-busy={isLoading}>
-      <h2 className={styles.title}>Популярні історії</h2>
+    <section className={styles.section}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Популярні статті</h2>
+        <Link href="/stories" className={styles.allStories}>
+          Всі статті
+        </Link>
+      </div>
 
-      {isLoading && <p className={styles.message}>Завантаження історій...</p>}
+      <div className={styles.list} ref={listRef}>
+        {popularStories.map(story => (
+          <StoryCard key={story._id} story={story} />
+        ))}
+      </div>
 
-      {!isLoading && error && (
-        <p className={styles.message} role="alert">
-          {error}
-        </p>
+      {popularStories.length > 1 && (
+        <div className={styles.controls}>
+          <CarouselArrowButton
+            direction="previous"
+            label="Попередні історії"
+            onClick={() => scrollStories('previous')}
+          />
+
+          <CarouselArrowButton
+            direction="next"
+            label="Наступні історії"
+            onClick={() => scrollStories('next')}
+          />
+        </div>
       )}
 
-      {!isLoading && !error && stories.length === 0 && (
-        <p className={styles.message}>Популярних історій поки немає.</p>
-      )}
-
-      {!isLoading && !error && stories.length > 0 && (
-        <>
-          <div className={styles.list} ref={listRef}>
-            {stories.map(story => (
-              <StoryCard key={story._id} story={story} />
-            ))}
-          </div>
-
-          {stories.length > 1 && (
-            <div className={styles.controls}>
-              <CarouselArrowButton
-                direction="previous"
-                label="Попередні історії"
-                onClick={() => scrollStories('previous')}
-              />
-
-              <CarouselArrowButton
-                direction="next"
-                label="Наступні історії"
-                onClick={() => scrollStories('next')}
-              />
-            </div>
-          )}
-        </>
-      )}
+      <Link href="/stories" className={styles.allStoriesMobile}>
+        Всі статті
+      </Link>
     </section>
   );
 }

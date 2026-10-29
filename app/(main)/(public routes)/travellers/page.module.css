@@ -30,3 +30,7 @@
         font-size: 48px;
     }
 }
+/* Dark theme */
+:global(.dark) .title {
+  color: #fff;
+}
