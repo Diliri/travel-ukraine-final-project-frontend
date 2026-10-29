@@ -115,7 +115,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     values: AuthValues,
     helpers: FormikHelpers<AuthValues>
   ) => {
-    const endpoint = isRegister ? '/auth/register' : '/auth/login';
+    const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
 
     try {
       const { data } = await axios.post(endpoint, {
