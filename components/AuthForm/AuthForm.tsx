@@ -136,8 +136,6 @@ export default function AuthForm() {
     values: RegisterValues,
     helpers: FormikHelpers<RegisterValues>
   ) => {
-    const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-
     try {
       const response = await register({
         name: values.name.trim(),
