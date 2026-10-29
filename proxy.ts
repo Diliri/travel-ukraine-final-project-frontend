@@ -189,7 +189,7 @@ export const config = {
     "/profile/:path*",
     "/stories/new",
     "/stories/:path*/edit",
-    "/login",
-    "/register",
+    "/auth/login",
+    "/auth/register",
   ],
 };

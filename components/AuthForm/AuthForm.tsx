@@ -4,16 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import { isAxiosError } from "axios";
-import axios from "axios";
 import toast from "react-hot-toast";
 
+import { register } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-import { registerSchema, loginSchema } from "@/lib/validation/authValidation";
+import { registerSchema } from "@/lib/validation/authValidation";
 import css from "./AuthForm.module.css";
-
-interface AuthFormProps {
-  type: 'login' | 'register';
-}
 
 type PasswordFieldProps = {
   id: string;
@@ -87,60 +83,74 @@ function PasswordField({ id, autoComplete, hasError }: PasswordFieldProps) {
   );
 }
 
-interface AuthValues {
-  name?: string;
+interface RegisterValues {
+  name: string;
   email: string;
   password: string;
 }
 
-export default function AuthForm({ type }: AuthFormProps) {
+function getErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const data: unknown = error.response?.data;
+
+    if (typeof data === "string" && data.trim()) {
+      return data;
+    }
+
+    if (data && typeof data === "object" && "message" in data) {
+      const message = data.message;
+      if (typeof message === "string" && message.trim()) {
+        return message;
+      }
+      if (Array.isArray(message)) {
+        const messages = message.filter(
+          (item): item is string =>
+            typeof item === "string" && item.trim().length > 0
+        );
+        if (messages.length > 0) return messages.join(". ");
+      }
+    }
+
+    if (!error.response) {
+      return "Не вдалося з'єднатися із сервером. Перевірте налаштування API та спробуйте ще раз.";
+    }
+
+    return "Сталася помилка. Спробуйте ще раз.";
+  }
+
+  if (error instanceof Error) return error.message;
+  return "Сталася помилка. Спробуйте ще раз.";
+}
+
+const initialValues: RegisterValues = {
+  name: "",
+  email: "",
+  password: "",
+};
+
+export default function AuthForm() {
   const router = useRouter();
   const { setUser } = useAuthStore();
 
-  const isRegister = type === 'register';
-
-  const title = isRegister ? "Реєстрація" : "Вхід";
-  const subtitle = isRegister 
-    ? "Раді вас бачити у спільноті мандрівників!" 
-    : "Вітаємо знову у спільноті мандрівників!";
-  const submitLabel = isRegister ? "Зареєструватись" : "Увійти";
-
-  const initialValues: AuthValues = {
-    email: "",
-    password: "",
-    ...(isRegister ? { name: "" } : {}),
-  };
-
   const handleSubmit = async (
-    values: AuthValues,
-    helpers: FormikHelpers<AuthValues>
+    values: RegisterValues,
+    helpers: FormikHelpers<RegisterValues>
   ) => {
     const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
 
     try {
-      const { data } = await axios.post(endpoint, {
-        ...values,
-        ...(isRegister && values.name ? { name: values.name.trim() } : {}),
+      const response = await register({
+        name: values.name.trim(),
         email: values.email.trim(),
+        password: values.password,
       });
 
-      const user = "user" in data ? data.user : data;
-
-      setUser(user);
-      toast.success(isRegister ? "Реєстрація успішна" : "Вхід успішний");
+      setUser(response.user);
+      toast.success("Реєстрація успішна");
       router.push("/profile");
       router.refresh();
-    } catch (err: unknown) {
-      let msg = 'Сталася помилка';
-
-      if (isAxiosError(err)) {
-        const errorData = err.response?.data as { message?: string } | undefined;
-        msg = errorData?.message || err.message;
-      } else if (err instanceof Error) {
-        msg = err.message;
-      }
-
-      toast.error(msg);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
     } finally {
       helpers.setSubmitting(false);
     }
@@ -149,37 +159,35 @@ export default function AuthForm({ type }: AuthFormProps) {
   return (
     <div className={css.content}>
       <div className={css.heading}>
-        <h1 className={css.title}>{title}</h1>
-        <p className={css.subtitle}>{subtitle}</p>
+        <h1 className={css.title}>Реєстрація</h1>
+        <p className={css.subtitle}>Раді вас бачити у спільноті мандрівників!</p>
       </div>
 
-      <Formik<AuthValues>
+      <Formik<RegisterValues>
         initialValues={initialValues}
-        validationSchema={isRegister ? registerSchema : loginSchema}
+        validationSchema={registerSchema}
         validateOnBlur
         validateOnChange={false}
         onSubmit={handleSubmit}
       >
         {({ isSubmitting, errors, touched }) => (
           <Form className={css.form} noValidate>
-            {isRegister && (
-              <div className={css.field}>
-                <label className={css.label} htmlFor="name">
-                  Імʼя та Прізвище*
-                </label>
-                <Field
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Ваше імʼя та прізвище"
-                  className={`${css.input}${
-                    touched.name && errors.name ? ` ${css.inputError}` : ""
-                  }`}
-                  autoComplete="name"
-                />
-                <ErrorMessage name="name" component="p" className={css.error} />
-              </div>
-            )}
+            <div className={css.field}>
+              <label className={css.label} htmlFor="name">
+                Імʼя та Прізвище*
+              </label>
+              <Field
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Ваше імʼя та прізвище"
+                className={`${css.input}${
+                  touched.name && errors.name ? ` ${css.inputError}` : ""
+                }`}
+                autoComplete="name"
+              />
+              <ErrorMessage name="name" component="p" className={css.error} />
+            </div>
 
             <div className={css.field}>
               <label className={css.label} htmlFor="email">
@@ -195,11 +203,7 @@ export default function AuthForm({ type }: AuthFormProps) {
                 }`}
                 autoComplete="email"
               />
-              <ErrorMessage
-                name="email"
-                component="p"
-                className={css.error}
-              />
+              <ErrorMessage name="email" component="p" className={css.error} />
             </div>
 
             <div className={css.field}>
@@ -208,22 +212,14 @@ export default function AuthForm({ type }: AuthFormProps) {
               </label>
               <PasswordField
                 id="password"
-                autoComplete={isRegister ? "new-password" : "current-password"}
+                autoComplete="new-password"
                 hasError={Boolean(touched.password && errors.password)}
               />
-              <ErrorMessage
-                name="password"
-                component="p"
-                className={css.error}
-              />
+              <ErrorMessage name="password" component="p" className={css.error} />
             </div>
 
-            <button
-              type="submit"
-              className={css.button}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Завантаження…" : submitLabel}
+            <button type="submit" className={css.button} disabled={isSubmitting}>
+              {isSubmitting ? "Завантаження…" : "Зареєструватись"}
             </button>
           </Form>
         )}
