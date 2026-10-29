@@ -6,6 +6,8 @@
   width: 100%;
   z-index: 100;
   background: var(--color-scheme-2-background);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  
 }
 
 .content {

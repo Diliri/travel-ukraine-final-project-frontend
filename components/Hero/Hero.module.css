@@ -168,7 +168,7 @@ button:hover {
 
 @media screen and (min-width: 1440px) {
     .hero {
-        padding: 72px 64px;
+        padding: 112px 64px 72px;
     }
 
     .container {
