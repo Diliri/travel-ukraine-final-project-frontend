@@ -1,4 +1,6 @@
 .card {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
   border-radius: 16px;
@@ -21,6 +23,9 @@
 }
 
 .content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 12px;
   font-weight: 600;
 }
@@ -41,6 +46,7 @@
 
 .footer {
   min-height: 48px;
+  margin-top: auto;
   align-items: center;
   justify-content: space-between;
 }
@@ -168,7 +174,7 @@
 }
 
 @media (min-width: 1200px) {
-  .titleFull {
+  .title:has(.titleShort) .titleFull {
     display: none;
   }
 
@@ -188,4 +194,45 @@
   .spinner {
     animation-duration: 1.5s;
   }
+}
+
+/* Dark theme */
+:global(html.dark) .card,
+:global(.dark) .card {
+  background-color: #1b391b;
+  color: #fff;
+}
+
+:global(html.dark) .title,
+:global(.dark) .title,
+:global(html.dark) .meta,
+:global(.dark) .meta,
+:global(html.dark) .footer,
+:global(.dark) .footer,
+:global(html.dark) .rate,
+:global(.dark) .rate,
+:global(html.dark) .smallFlag,
+:global(.dark) .smallFlag,
+:global(html.dark) .titleFull,
+:global(.dark) .titleFull,
+:global(html.dark) .titleShort,
+:global(.dark) .titleShort {
+  color: #fff;
+}
+
+:global(html.dark) .readMore,
+:global(.dark) .readMore,
+:global(html.dark) .saveButton,
+:global(.dark) .saveButton {
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+:global(html.dark) .readMore:hover,
+:global(.dark) .readMore:hover,
+:global(html.dark) .saveButton:hover,
+:global(.dark) .saveButton:hover {
+  background-color: #4a9849;
+  color: #fff;
 }

@@ -4,6 +4,7 @@
   margin: 0 auto;
   padding: 48px 20px;
   color: var(--color-scheme-2-text);
+  background-color: var(--color-scheme-2-background);
   box-sizing: border-box;
 }
 
@@ -20,6 +21,7 @@
   font-weight: 700;
   line-height: 1.2;
   font-size: 28px;
+  color: var(--color-scheme-2-text);
 }
 
 .allStories {
@@ -150,4 +152,21 @@
     max-width: 1440px;
     padding: 72px 64px;
   }
+}
+
+/* Dark theme */
+:global(html.dark) .section,
+:global(.dark) .section {
+  background-color: var(--color-mantis-darker);
+  color: #fff;
+}
+
+:global(html.dark) .title,
+:global(.dark) .title {
+  color: #fff;
+}
+
+:global(html.dark) .message,
+:global(.dark) .message {
+  color: #fff;
 }

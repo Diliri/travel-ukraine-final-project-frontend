@@ -1,13 +1,17 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { isAxiosError } from 'axios';
 import StoryCard from '@/components/StoryCard/StoryCard';
 import type { StoryCardData } from '@/components/StoryCard/StoryCard';
+import { nextServer } from '@/lib/api/api';
+import type { StoriesResponse } from '@/lib/api/storiesResponse';
 import styles from './PopularStoriesSection.module.css';
 import CarouselArrowButton from '@/components/CarouselArrowButton/CarouselArrowButton';
 
-const popularStories: StoryCardData[] = [
+// Фолбек-дані, якщо бекенд не відповів (для демо / офлайн)
+const fallbackStories: StoryCardData[] = [
   {
     _id: 'karpaty-novachkiv',
     title: 'Карпати для новачків: легкі маршрути вихідного дня',
@@ -38,7 +42,48 @@ const popularStories: StoryCardData[] = [
 ];
 
 export default function PopularStoriesSection() {
+  const [stories, setStories] = useState<StoryCardData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Запит на бекенд: GET /stories/popular
+  // Якщо бекенд не відповів — показуємо fallbackStories
+  useEffect(() => {
+    async function loadPopularStories() {
+      try {
+        const { data } = await nextServer.get<StoriesResponse>('/stories/popular', {
+          params: { page: 1, perPage: 3 },
+        });
+
+        if (data.stories && data.stories.length > 0) {
+          // Мапимо відповідь бекенду на формат StoryCardData
+          const mapped: StoryCardData[] = data.stories.map(story => ({
+            _id: story._id,
+            title: story.title,
+            img: story.img,
+            rate: story.rate,
+            author:
+              typeof story.ownerId === 'object' && story.ownerId !== null
+                ? story.ownerId.name
+                : story.author,
+          }));
+          setStories(mapped);
+        } else {
+          setStories(fallbackStories);
+        }
+      } catch (requestError) {
+        // Бекенд недоступний — використовуємо статику
+        if (isAxiosError(requestError)) {
+          console.warn('Popular stories API failed, using fallback');
+        }
+        setStories(fallbackStories);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void loadPopularStories();
+  }, []);
 
   const scrollStories = (direction: 'next' | 'previous') => {
     const list = listRef.current;
@@ -70,7 +115,7 @@ export default function PopularStoriesSection() {
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} aria-busy={isLoading}>
       <div className={styles.header}>
         <h2 className={styles.title}>Популярні статті</h2>
         <Link href="/stories" className={styles.allStories}>
@@ -78,26 +123,31 @@ export default function PopularStoriesSection() {
         </Link>
       </div>
 
-      <div className={styles.list} ref={listRef}>
-        {popularStories.map(story => (
-          <StoryCard key={story._id} story={story} />
-        ))}
-      </div>
+      {isLoading && <p className={styles.message}>Завантаження історій...</p>}
 
-      {popularStories.length > 1 && (
-        <div className={styles.controls}>
-          <CarouselArrowButton
-            direction="previous"
-            label="Попередні історії"
-            onClick={() => scrollStories('previous')}
-          />
+      {!isLoading && stories.length > 0 && (
+        <>
+          <div className={styles.list} ref={listRef}>
+            {stories.map(story => (
+              <StoryCard key={story._id} story={story} />
+            ))}
+          </div>
 
-          <CarouselArrowButton
-            direction="next"
-            label="Наступні історії"
-            onClick={() => scrollStories('next')}
-          />
-        </div>
+          {stories.length > 1 && (
+            <div className={styles.controls}>
+              <CarouselArrowButton
+                direction="previous"
+                label="Попередні історії"
+                onClick={() => scrollStories('previous')}
+              />
+              <CarouselArrowButton
+                direction="next"
+                label="Наступні історії"
+                onClick={() => scrollStories('next')}
+              />
+            </div>
+          )}
+        </>
       )}
 
       <Link href="/stories" className={styles.allStoriesMobile}>

@@ -67,3 +67,29 @@
     background: var(--color-mantis-dark);
     color: var(--color-white);
 }
+
+/* Dark theme */
+:global(html.dark) .card,
+:global(.dark) .card {
+  background: #1b391b;
+}
+
+:global(html.dark) .name,
+:global(.dark) .name,
+:global(html.dark) .count,
+:global(.dark) .count {
+  color: #fff;
+}
+
+:global(html.dark) .link,
+:global(.dark) .link {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+:global(html.dark) .link:hover,
+:global(.dark) .link:hover {
+  background: #4a9849;
+  color: #fff;
+}
