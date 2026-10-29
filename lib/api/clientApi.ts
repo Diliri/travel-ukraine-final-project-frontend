@@ -3,6 +3,7 @@ import type { User } from '@/types/user';
 import type { Category } from '@/types/category';
 export type { User };
 import { type TravellersResponse } from '@/types/travellers';
+import axios from 'axios';
 
 export type CheckSessionResponse = {
   success: boolean;
@@ -34,7 +35,7 @@ export const logout = async (): Promise<void> => {
 
 
 export const login = async (data: LoginRequest) => {
-  const res = await nextServer.post<User>('/auth/login', data);
+  const res = await axios.post<User>('/api/auth/login', data, {withCredentials:true,});
   return res.data;
 };
 
