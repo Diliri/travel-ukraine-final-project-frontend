@@ -164,7 +164,7 @@ export default function AddStoryForm() {
       formData.append('article', values.article.trim());
 
       try {
-        const response = await fetch('/api/stories/create', {
+        const response = await fetch('/api/stories/new', {
           method: 'POST',
           body: formData,
           credentials: 'include',
