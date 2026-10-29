@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = new URL('/api/stories/me', backendUrl);
+    const url = new URL('/api/users/me/stories', backendUrl);
 
     const response = await fetch(url, {
       method: 'GET',
